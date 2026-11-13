@@ -1,5 +1,7 @@
 # Tranchi Land · Interactive Cleveland Preview
 
+**Live preview:** https://tranchi-land-preview.onrender.com/
+
 An original Tranchi-branded land-flipping product mockup built with real cached public-record data. It is not affiliated with LandAtlas and uses no LandAtlas code, branding, or assets.
 
 ## What works
