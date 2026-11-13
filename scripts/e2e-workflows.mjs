@@ -57,7 +57,15 @@ try {
   await page.goto(compareUrl, { waitUntil: 'networkidle' });
   await page.locator('.compare-overlay').waitFor();
   assert.equal(await page.locator('.compare-table thead th').count(), 3);
-  await page.getByRole('button', { name: 'Close comparison' }).click();
+  await page.locator('.compare-overlay').getByRole('button', { name: /Comp \/ offer PDF/ }).first().click();
+  await page.locator('.offer-dialog').waitFor();
+  assert.equal(await page.locator('.compare-overlay').count(), 0);
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('.offer-dialog').count(), 0);
+  await page.locator('.compare-overlay').waitFor();
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('.compare-overlay').count(), 0);
+  console.log('PASS only the topmost PDF dialog handles Escape; comparison returns after it closes');
   console.log('PASS shared compare URL reopens comparison');
 
   await page.getByRole('button', { name: /Comp \/ offer PDF/ }).first().click();

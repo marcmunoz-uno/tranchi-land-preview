@@ -260,7 +260,7 @@ export default function App() {
 
       <footer className="app-footer"><span>Tranchi Land · product concept preview</span><span>Public records can be wrong or stale. Verify before making an offer.</span></footer>
       {shortlistOpen && <ShortlistPanel records={shortlistedRecords} compareIds={compareIds} onClose={() => setShortlistOpen(false)} onSelect={id => { selectParcel(id); setShortlistOpen(false); }} onRemove={removeParcel} onClear={clearShortlist} onToggleCompare={toggleCompare} onCompare={openComparison} />}
-      {compareOpen && compareRecords.length >= 2 && <CompareParcels records={compareRecords} onClose={() => setCompareOpen(false)} onRemove={id => setCompareIds(ids => ids.filter(compareId => compareId !== id))} onOfferPdf={setOfferRecord} />}
+      {compareOpen && !offerRecord && compareRecords.length >= 2 && <CompareParcels records={compareRecords} onClose={() => setCompareOpen(false)} onRemove={id => setCompareIds(ids => ids.filter(compareId => compareId !== id))} onOfferPdf={setOfferRecord} />}
       {offerRecord && <CompOfferDialog record={offerRecord} onClose={() => setOfferRecord(null)} onDownloaded={filename => setToast(`PDF downloaded · ${filename}`)} />}
       {initialUrl.recovered && !urlWarningDismissed && <div className="toast url-warning" role="alert"><span>Some shared-link values were invalid and were safely reset.</span><button onClick={() => setUrlWarningDismissed(true)}>Dismiss</button></div>}
       {toast && <div className="toast" role="status"><Check size={16} />{toast}</div>}
