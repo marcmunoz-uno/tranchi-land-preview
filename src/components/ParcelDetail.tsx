@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { BarChart3, Check, Info, Share2, X } from 'lucide-react';
 import type { CompSettings, LandRecord } from '../types';
-import { acresLabel, addressLabel, analyzeLand, dateLabel, DEFAULT_COMP_SETTINGS, findLandComps, landSellerSignal, money, number } from '../lib/analysis';
+import { acresLabel, addressLabel, analyzeLand, dateLabel, DEFAULT_COMP_SETTINGS, findLandComps, landSellerSignal, money, nonNegativeAmount, number } from '../lib/analysis';
 import { dataset } from '../data/land';
 import { ValidationBadge } from './ValidationBadge';
 
@@ -22,8 +22,8 @@ export function ParcelDetail({ record, onClose, onShare, shared }: {
   const signal = landSellerSignal(record);
   const comps = useMemo(() => findLandComps(record, dataset.records, settings, new Date(dataset.generatedAt)), [record, settings]);
   const analysis = useMemo(() => analyzeLand(record, comps), [record, comps]);
-  const feeNumber = Math.max(0, Number(assignmentFee) || 0);
-  const costsNumber = Math.max(0, Number(closingCosts) || 0);
+  const feeNumber = nonNegativeAmount(assignmentFee);
+  const costsNumber = nonNegativeAmount(closingCosts);
   const maxOffer = analysis.estimatedValue === null ? null : analysis.estimatedValue - feeNumber - costsNumber;
   return (
     <aside className="detail-panel" aria-label={`Parcel details for ${addressLabel(record)}`}>

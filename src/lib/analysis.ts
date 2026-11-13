@@ -8,6 +8,11 @@ export const DEFAULT_FILTERS: FilterState = {
 };
 export const DEFAULT_COMP_SETTINGS: CompSettings = { radiusMiles: 25, maxAgeMonths: 120, acreageTolerance: 4 };
 
+export function nonNegativeAmount(value: string | number) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+}
+
 const INTENT: Record<string, number> = { failedListing: 3, expiredListing: 3, canceledListing: 3, listedBelowMarketPrice: 2, forSaleByOwner: 2 };
 const PRESSURE: Record<string, number> = { preforeclosure: 4, noticeOfDefault: 4, noticeOfLisPendens: 4, noticeOfSale: 4, activeAuction: 4, taxDefault: 3, involuntaryLien: 3, openLien: 2 };
 const MOTIVATION: Record<string, number> = { vacant: 2, mailingAddressVacant: 2, tiredLandlord: 2, inherited: 2, absenteeOwner: 1, absenteeOwnerOutOfState: 1, outOfStateOwner: 1, seniorOwner: 1, corporateOwned: 1, trustOwned: 1 };

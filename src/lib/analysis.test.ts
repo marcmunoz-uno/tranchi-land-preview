@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { landRecords, dataset } from '../data/land';
-import { analyzeLand, DEFAULT_COMP_SETTINGS, DEFAULT_FILTERS, filterLandRecords, findLandComps, landSellerSignal, median } from './analysis';
+import { analyzeLand, DEFAULT_COMP_SETTINGS, DEFAULT_FILTERS, filterLandRecords, findLandComps, landSellerSignal, median, nonNegativeAmount } from './analysis';
 
 const subject = landRecords.find(record => record.validation.status === 'verified_vacant') ?? landRecords[0];
 
@@ -68,6 +68,14 @@ describe('real Cleveland dataset', () => {
     const improvedSubject = { ...subject, validation: { ...subject.validation, status: 'improved' as const } };
     expect(findLandComps(improvedSubject, landRecords, DEFAULT_COMP_SETTINGS, new Date(dataset.generatedAt))).toEqual([]);
     expect(analyzeLand(improvedSubject, validComps).available).toBe(false);
+  });
+
+  it('normalizes offer inputs to finite nonnegative amounts', () => {
+    expect(nonNegativeAmount(-10000)).toBe(0);
+    expect(nonNegativeAmount('not-a-number')).toBe(0);
+    expect(nonNegativeAmount('Infinity')).toBe(0);
+    expect(nonNegativeAmount(Number.POSITIVE_INFINITY)).toBe(0);
+    expect(nonNegativeAmount('1500')).toBe(1500);
   });
 
   it('refuses to estimate with fewer than three comps', () => {

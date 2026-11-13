@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AlertCircle, Check, FileDown, Info, LoaderCircle, X } from 'lucide-react';
 import type { CompSettings, LandRecord } from '../types';
-import { acresLabel, addressLabel, analyzeLand, dateLabel, DEFAULT_COMP_SETTINGS, findLandComps, money, number } from '../lib/analysis';
+import { acresLabel, addressLabel, analyzeLand, dateLabel, DEFAULT_COMP_SETTINGS, findLandComps, money, nonNegativeAmount, number } from '../lib/analysis';
 import { dataset } from '../data/land';
 
 export function CompOfferDialog({ record, onClose, onDownloaded }: {
@@ -29,8 +29,8 @@ export function CompOfferDialog({ record, onClose, onDownloaded }: {
 
   const selectedComps = allComps.filter(comp => selectedCompIds.includes(comp.record.id));
   const analysis = analyzeLand(record, selectedComps);
-  const feeNumber = Math.max(0, Number(assignmentFee) || 0);
-  const costsNumber = Math.max(0, Number(closingCosts) || 0);
+  const feeNumber = nonNegativeAmount(assignmentFee);
+  const costsNumber = nonNegativeAmount(closingCosts);
   const maxOffer = analysis.estimatedValue === null ? null : analysis.estimatedValue - feeNumber - costsNumber;
 
   const toggleComp = (id: string) => {
