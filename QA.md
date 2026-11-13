@@ -2,43 +2,59 @@
 
 ## Verified deployments
 
-- Local: `http://127.0.0.1:3210/`
+- Local integrated preview: `http://127.0.0.1:3213/`
 - Live: `https://tranchi-land-preview.onrender.com/`
-- Live Render deploy: `dep-dbr6j1t9fdbs73delt3g`
-- Commit: `f02db7b392aba9ba32b316317ef333b7292cb294`
+- Latest verified application commit: `6cbc4c4` (`fix: harden shared filters and dialog accessibility`)
+- Alphapipe PR: https://github.com/tranchi-labs/tranchi-alpha-pipeline/pull/1
 
 ## Automated checks
 
-- `npm test`: 7/7 unit and real-data tests passed.
+- `npm test`: 60/60 unit, data, validation, market, and URL tests passed.
 - `npm run build`: TypeScript and Vite production build passed.
-- `node scripts/e2e.mjs`: 9/9 local browser checks passed.
-- `BASE_URL=https://tranchi-land-preview.onrender.com/ node scripts/e2e.mjs`: 9/9 live browser checks passed.
+- `uv run pytest -q` in alphapipe: 47/47 tests passed.
+- `node scripts/e2e.mjs`: 9/9 checks passed locally and against the live URL.
+- `node scripts/e2e-workflows.mjs`: shortlist, comparison, sharing, PDF, corrupt-link recovery, Escape, accessible mobile sharing, and mobile overflow all passed locally and live.
+- `node scripts/e2e-markets.mjs`: market filtering, evidence filters, share URLs, and unsupported-zoning recovery all passed locally and live.
 
-Browser coverage:
+## Verified product behavior
 
-1. 140 real parcel markers render on the map.
-2. Parcel inspector opens with real data; 12 recorded-sale comps and the max-offer calculation render for the tested parcel.
-3. The 0.1-acre maximum filter returns exactly 48 parcels.
-4. Named saved searches persist to localStorage.
-5. CSV downloads contain 48 filtered records plus the header and no contact columns.
-6. Empty results show a useful reset path.
-7. Desktop has zero JavaScript errors.
-8. The 390px mobile layout has no horizontal page overflow.
-9. Mobile filter drawer, list, full-width inspector, close path, and console all pass with zero JavaScript errors.
+1. The map renders 439 verified/probable land records across Cleveland OH, Bastrop TX, and Lehigh Acres FL.
+2. Improved and unclear records appear only after explicit inclusion; all 556 candidates are retained in the data.
+3. Lehigh Acres filtering returns 59 likely-vacant records with evidence badges.
+4. Market selection is preserved in share URLs.
+5. Unsupported zoning resets with a visible warning instead of a silent empty state.
+6. Parcel analysis uses 12 real recorded-sale comps; improved and unclear parcels are excluded from comp pools and valuation.
+7. The 0.1-acre filter returns 104 records across all three markets.
+8. Named saved searches persist to localStorage.
+9. CSV downloads contain 104 filtered records plus the header, validation fields, and no contact columns.
+10. Shortlist add/remove persists across reloads.
+11. Two-parcel comparison works and is restored from a compare URL.
+12. Shared searches restore shortlisted parcel IDs.
+13. Real PDF downloads work: 20,168 bytes with an estimate and 10,101 bytes with an honest insufficient-comps state.
+14. Escape closes the comp/offer dialog.
+15. Mobile share has an accessible name.
+16. The 390px mobile layout has no horizontal overflow; filter drawer, list, shortlist, comparison, and full-width inspector work with zero JavaScript errors.
 
-## Share-safety checks
+## Data and share-safety checks
 
-- 140 real records exported from the local alphapipe cache.
+- 556 real records extracted from the authoritative DGX Spark alphapipe cache; no paid provider retrieval.
+- Validation statuses: 51 verified vacant, 388 probable vacant, 114 improved, 3 unclear.
 - No owner names, mailing addresses, phone numbers, or email addresses.
 - No backend, authentication, live lookup, CRM write, skip trace, direct mail, e-sign, or outbound action.
 - No LandAtlas branding, code, or assets.
+- Raw SQLite files and Python artifacts are gitignored.
+- `noindex,nofollow` and static security headers are present.
 
 ## Visual review note
 
-Playwright screenshots were captured under `qa/screenshots/` locally. The available AI visual-analysis service timed out on repeated attempts, so no AI visual-inspection claim is made. Layout and interactions were verified through real browser DOM checks, viewport/overflow assertions, and the Playwright suite.
+Playwright screenshots were captured under `qa/screenshots/` locally. The available AI visual-analysis service timed out on repeated attempts, so no AI visual-inspection claim is made. Layout and interactions were verified through real browser DOM checks, viewport/overflow assertions, and Playwright suites.
 
 Design-slop self-audit: 0/10. The composition is an Explore surface led by map, filters, and inspector; Tranchi navy/gold and DM Sans are deliberate existing brand choices. No marketing hero, feature-tile grid, generic gradient, glassmorphism, fake metrics, or decorative SVG product imagery.
 
-## Deployment note
+## Deployment notes
 
-The initial automatic Render deploy used default static settings (`public`, no build command) and failed. The service was corrected to `npm ci && npm run build` with `dist` as the publish directory. The explicit replacement deploy succeeded and is live.
+The initial automatic Render deploy used default static settings (`public`, no build command) and failed. The service was corrected to `npm ci && npm run build` with `dist` as the publish directory. The explicit replacement deploy succeeded and is live. Subsequent integrated commits auto-deployed successfully, including the final accessibility/hardening commit.
+
+## API verification
+
+The separate alphapipe branch implements `POST /alpha/land/search` with exact vacant-lot predicates, land-specific scoring, cache-only responses, contact-free projections, explicit `cache_miss`, and `criteriaNotJudged` for missing APN, geo status, assessment, sale, acreage, zoning, and topography. The endpoint makes no BatchData call. Its second-market plan uses free `take=0` counts only: Cleveland 3,421; Ocala 2,578; Lehigh Acres 64,552. Ocala is recommended for a later guarded second market; a broad Lehigh Acres pull is rejected.

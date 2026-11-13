@@ -1,35 +1,58 @@
-# Tranchi Land · Interactive Cleveland Preview
+# Tranchi Land · Multi-Market Interactive Preview
 
 **Live preview:** https://tranchi-land-preview.onrender.com/
 
-An original Tranchi-branded land-flipping product mockup built with real cached public-record data. It is not affiliated with LandAtlas and uses no LandAtlas code, branding, or assets.
+An original Tranchi-branded land-flipping product mockup built with real cached public-record data from the DGX Spark alphapipe cache. It is not affiliated with LandAtlas and uses no LandAtlas code, branding, or assets.
 
 ## What works
 
-- 140 real Cleveland vacant-land records with no owner contact details
-- Street and satellite maps with synchronized parcel selection
-- Address/APN/ZIP, acreage, zoning, topography, seller-signal, and sale-history filters
-- Map-first and list-first layouts
-- Parcel facts and explainable seller signals
-- Recorded-sale land comps with explicit radius, recency, and acreage controls
-- Comp-supported value and editable max-offer model; no estimate with fewer than three comps
-- Named saved searches on the current device
-- CSV export of filtered parcel data without owner contact columns
-- Shareable parcel links and responsive mobile drawers/inspector
+- 556 real records across Cleveland OH, Bastrop TX, and Lehigh Acres FL.
+- A default view of 439 verified/probable vacant-land records; improved and unclear records remain available only by explicit choice.
+- Per-record vacancy status, confidence, reasons, and field completeness.
+- Street and satellite maps with synchronized parcel selection.
+- Market, address/APN/ZIP, acreage, zoning, topography, seller-signal, vacancy, and sale-history filters.
+- Market-level record counts, field coverage, and freshness.
+- Map-first and list-first layouts.
+- Parcel facts and explainable seller signals without the residential vacantLot penalty.
+- Recorded-sale land comps with explicit radius, recency, and acreage controls; improved and unclear parcels are excluded from comps.
+- Comp-supported value and editable max-offer model; no estimate with fewer than three usable comps.
+- Persistent shortlist, shortlist-only browsing, and side-by-side comparison of 2–5 parcels.
+- Shareable filter, shortlist, and compare URLs with safe recovery from unsupported values.
+- Client-side comp/offer PDF generation with selected evidence, assumptions, and an honest insufficient-comp state.
+- Named saved searches on the current device.
+- CSV export of filtered parcel data without owner contact columns.
+- Accessible mobile drawers, inspector, dialogs, and controls, including Escape-to-close and named share actions.
+- `noindex,nofollow` and static security headers.
 
 ## Honest limits
 
 This is a static interactive preview, not a live subscription product. It has no backend, authentication, live feed, owner contacts, skip tracing, direct mail, e-sign, CRM writes, or outbound actions. Flood, wetlands, canal access, and parcel-boundary polygons are not in the cached dataset. Points are provider coordinates/parcel centroids, not boundaries. Public records can be wrong or stale; verify before making an offer.
 
+The public JSON excludes owner names, mailing addresses, phone numbers, and email addresses. Raw cache databases are gitignored.
+
 ## Local development
 
 ```bash
 npm ci
-python3 scripts/export_land_preview.py --out data/cleveland-land.json --coverage data/coverage.json
+python3 scripts/export_land_preview.py --db data/land-markets.db --out data/cleveland-land.json --coverage data/coverage.json
 npm run dev
 ```
 
 Open http://localhost:3210.
+
+## Multi-market data refresh
+
+The 556-record extract uses the authoritative Spark cache, not a paid refresh. See `docs/SPARK-DATA.md` for evidence and reproduction.
+
+```bash
+scp scripts/export_spark_land.py dgx-spark:/tmp/export_spark_land.py
+ssh dgx-spark 'python3 /tmp/export_spark_land.py'
+scp dgx-spark:~/.tranchi/land-preview-export-20261113.db data/land-markets.db
+python3 scripts/export_land_preview.py \
+  --db data/land-markets.db \
+  --out data/cleveland-land.json \
+  --coverage data/coverage.json
+```
 
 ## Verification
 
@@ -37,9 +60,17 @@ Open http://localhost:3210.
 npm test
 npm run build
 node scripts/e2e.mjs
+node scripts/e2e-workflows.mjs
+node scripts/e2e-markets.mjs
 ```
 
-The Playwright suite uses the installed macOS Chrome by default. Set `CHROME_PATH` on another platform and `BASE_URL` to test a deployed URL.
+The Playwright suites use installed macOS Chrome by default. Set `CHROME_PATH` on another platform and `BASE_URL` to test a deployed URL.
+
+## Cache-only alphapipe endpoint
+
+A separate `feat/land-search-api` branch adds `POST /alpha/land/search`, which serves cached vacant-land records only and never triggers BatchData on the request path. It reports missing evidence in `criteriaNotJudged` and returns a typed `cache_miss` instead of purchasing data.
+
+PR: https://github.com/tranchi-labs/tranchi-alpha-pipeline/pull/1
 
 ## Render
 
