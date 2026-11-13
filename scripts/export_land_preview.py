@@ -279,12 +279,17 @@ def build_coverage(records):
         for path in COVERAGE_FIELDS:
             if field_value(record, path) is not None:
                 field_counts[path] += 1
+        if record['validation']['status'] in {'improved', 'unclear'}:
+            buckets['not_land'] += 1
+            continue
         if valid_coordinates(record):
             position = (record['address']['lat'], record['address']['lng'])
             subject_acres = record['lot']['acres']
             eligible = 0
             if positive(subject_acres):
                 for candidate in records:
+                    if candidate['validation']['status'] in {'improved', 'unclear'}:
+                        continue
                     if candidate['id'] == record['id'] or not positive(candidate['lot']['acres']):
                         continue
                     if not positive(candidate['sale']['price']) or candidate['sale']['transactionTypeCode'] != 'B':

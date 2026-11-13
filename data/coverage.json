@@ -25,8 +25,10 @@
     "averageFieldCompleteness": 88.2
   },
   "compCandidatesWithin25MiAnd4xAcreage": {
-    "3+": 550,
-    "1-2": 6
+    "not_land": 117,
+    "3+": 428,
+    "0": 1,
+    "1-2": 10
   },
   "notes": [
     "Counts describe only the selected cached markets in this export.",

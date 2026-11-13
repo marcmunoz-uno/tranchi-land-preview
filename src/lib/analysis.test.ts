@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { landRecords, dataset } from '../data/land';
 import { analyzeLand, DEFAULT_COMP_SETTINGS, DEFAULT_FILTERS, filterLandRecords, findLandComps, landSellerSignal, median } from './analysis';
 
-const subject = landRecords[0];
+const subject = landRecords.find(record => record.validation.status === 'verified_vacant') ?? landRecords[0];
 
 describe('real Cleveland dataset', () => {
   it('exports the expected share-safe records', () => {
@@ -48,6 +48,26 @@ describe('real Cleveland dataset', () => {
     expect(analysis.available).toBe(true);
     expect(analysis.estimatedValue).toBeGreaterThan(0);
     expect(comps.every(c => c.record.sale.transactionTypeCode === 'B')).toBe(true);
+  });
+
+  it('keeps improved and unclear parcels out of land comps and valuation', () => {
+    const validComps = findLandComps(subject, landRecords, DEFAULT_COMP_SETTINGS, new Date(dataset.generatedAt));
+    const improved = {
+      ...validComps[0].record,
+      id: 'improved-comp',
+      validation: { ...validComps[0].record.validation, status: 'improved' as const },
+    };
+    const unclear = {
+      ...validComps[0].record,
+      id: 'unclear-comp',
+      validation: { ...validComps[0].record.validation, status: 'unclear' as const },
+    };
+    const comps = findLandComps(subject, [...landRecords, improved, unclear], DEFAULT_COMP_SETTINGS, new Date(dataset.generatedAt));
+    expect(comps.some(comp => ['improved-comp', 'unclear-comp'].includes(comp.record.id))).toBe(false);
+
+    const improvedSubject = { ...subject, validation: { ...subject.validation, status: 'improved' as const } };
+    expect(findLandComps(improvedSubject, landRecords, DEFAULT_COMP_SETTINGS, new Date(dataset.generatedAt))).toEqual([]);
+    expect(analyzeLand(improvedSubject, validComps).available).toBe(false);
   });
 
   it('refuses to estimate with fewer than three comps', () => {
