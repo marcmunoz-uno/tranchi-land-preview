@@ -176,7 +176,7 @@ export function downloadCompOfferPdf(input: CompOfferPdfInput) {
   [
     'This worksheet is planning math, not an appraisal, buyer commitment, contract, or offer sent to any party.',
     'Estimated value is the unadjusted median selected-comp price per acre multiplied by subject acreage. No location, condition, access, zoning, utility, or time adjustments are made.',
-    'Comps are recorded sales from the cached Cleveland public-record sample that meet the displayed radius, sale-age, acreage, and arms-length criteria and were selected for this worksheet.',
+    'Comps are recorded sales from the cached multi-market public-record land sample that meet the displayed radius, sale-age, acreage, and arms-length criteria and were selected for this worksheet.',
     'Maximum seller offer subtracts only the entered assignment fee and closing costs. Repairs, title issues, taxes, liens, commissions, financing, holding costs, resale costs, and profit margin are not separately modeled.',
     'Public records can be wrong or stale. Verify current ownership, title, taxes, legal and physical access, zoning, utilities, environmental constraints, flood/wetlands, parcel boundaries, and end-buyer demand before contracting.',
     `Source cache generated ${input.datasetGeneratedAt}. No owner contact details, live feed, or outbound action is included.`,
