@@ -4,15 +4,15 @@
 
 - Local integrated preview: `http://127.0.0.1:3213/`
 - Live: `https://tranchi-land-preview.onrender.com/`
-- Latest verified application commit: `6cbc4c4` (`fix: harden shared filters and dialog accessibility`)
+- Latest verified application commit: `80cee8e` (`fix: use multi-market PDF provenance`)
 - Alphapipe PR: https://github.com/tranchi-labs/tranchi-alpha-pipeline/pull/1
 
 ## Automated checks
 
 - `npm test`: 60/60 unit, data, validation, market, and URL tests passed.
 - `npm run build`: TypeScript and Vite production build passed.
-- `uv run pytest -q` in alphapipe: 47/47 tests passed.
-- `node scripts/e2e.mjs`: 9/9 checks passed locally and against the live URL.
+- `uv run pytest -q` in alphapipe: 49/49 tests passed.
+- `node scripts/e2e.mjs`: 10/10 checks passed locally and against the live URL.
 - `node scripts/e2e-workflows.mjs`: shortlist, comparison, sharing, PDF, corrupt-link recovery, Escape, accessible mobile sharing, and mobile overflow all passed locally and live.
 - `node scripts/e2e-markets.mjs`: market filtering, evidence filters, share URLs, and unsupported-zoning recovery all passed locally and live.
 
