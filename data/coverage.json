@@ -1,0 +1,21 @@
+{
+  "recordCount": 140,
+  "fields": {
+    "lot.acres": 140,
+    "lot.frontageFeet": 139,
+    "lot.depthFeet": 99,
+    "lot.zoning": 140,
+    "lot.topography": 140,
+    "sale.price": 95,
+    "sale.date": 134
+  },
+  "compCandidatesWithin25MiAnd4xAcreage": {
+    "3+": 139,
+    "1-2": 1
+  },
+  "notes": [
+    "Counts describe this local cached Cleveland dataset only.",
+    "No owner names, mailing addresses, phone numbers, or email addresses were exported.",
+    "Coordinates are provider points/parcel centroids, not parcel-boundary polygons."
+  ]
+}
