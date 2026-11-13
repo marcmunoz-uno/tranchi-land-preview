@@ -78,9 +78,9 @@ function monthsBetween(from: Date, to: Date) {
 }
 
 export function findLandComps(subject: LandRecord, records: LandRecord[], settings: CompSettings, asOf: Date): LandComp[] {
-  if (!subject.lot.acres || subject.lot.acres <= 0) return [];
+  if (!subject.lot.acres || subject.lot.acres <= 0 || subject.validation?.status === 'improved' || subject.validation?.status === 'unclear') return [];
   return records.flatMap(record => {
-    if (record.id === subject.id || !record.lot.acres || !record.sale.price || !record.sale.date || record.sale.transactionTypeCode !== 'B') return [];
+    if (record.id === subject.id || record.validation?.status === 'improved' || record.validation?.status === 'unclear' || !record.lot.acres || !record.sale.price || !record.sale.date || record.sale.transactionTypeCode !== 'B') return [];
     const ratio = record.lot.acres / subject.lot.acres!;
     if (ratio < 1 / settings.acreageTolerance || ratio > settings.acreageTolerance) return [];
     const distance = distanceMiles(subject.address, record.address);
@@ -99,7 +99,7 @@ export function median(values: number[]) {
 }
 
 export function analyzeLand(subject: LandRecord, comps: LandComp[]) {
-  if (!subject.lot.acres || comps.length < 3) return { available: false as const, estimatedValue: null, pricePerAcre: null };
+  if (!subject.lot.acres || subject.validation?.status === 'improved' || subject.validation?.status === 'unclear' || comps.length < 3) return { available: false as const, estimatedValue: null, pricePerAcre: null };
   const pricePerAcre = median(comps.map(c => c.pricePerAcre));
   if (pricePerAcre === null || pricePerAcre <= 0) return { available: false as const, estimatedValue: null, pricePerAcre: null };
   return { available: true as const, pricePerAcre, estimatedValue: pricePerAcre * subject.lot.acres };

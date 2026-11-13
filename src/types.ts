@@ -1,3 +1,13 @@
+export type ParcelValidationStatus = 'verified_vacant' | 'probable_vacant' | 'improved' | 'unclear';
+
+export type ParcelValidation = {
+  status: ParcelValidationStatus;
+  /** Confidence that the parcel is vacant, not confidence in the source provider. */
+  score: number;
+  reasons: string[];
+  fieldCompleteness: number;
+};
+
 export type LandRecord = {
   id: string;
   apn: string | null;
@@ -22,6 +32,16 @@ export type LandRecord = {
     zoning: string | null;
     topography: string | null;
   };
+  building: {
+    livingArea: number | null;
+    buildingArea: number | null;
+    yearBuilt: number | null;
+    units: number | null;
+    stories: number | null;
+    bedrooms: number | null;
+    bathrooms: number | null;
+    totalRooms: number | null;
+  };
   assessment: {
     landMarketValue: number | null;
     totalMarketValue: number | null;
@@ -37,6 +57,7 @@ export type LandRecord = {
   flags: string[];
   ownerOccupied: boolean | null;
   cachedAt: string;
+  validation: ParcelValidation;
 };
 
 export type LandDataset = {
@@ -45,6 +66,7 @@ export type LandDataset = {
   market: string;
   generatedAt: string;
   recordCount: number;
+  markets: Array<{ id: string; records: number }>;
   records: LandRecord[];
 };
 

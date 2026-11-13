@@ -1,21 +1,39 @@
 {
-  "recordCount": 140,
+  "recordCount": 556,
   "fields": {
-    "lot.acres": 140,
-    "lot.frontageFeet": 139,
-    "lot.depthFeet": 99,
-    "lot.zoning": 140,
-    "lot.topography": 140,
-    "sale.price": 95,
-    "sale.date": 134
+    "apn": 556,
+    "propertyTypeDetail": 556,
+    "lot.acres": 556,
+    "lot.squareFeet": 556,
+    "lot.frontageFeet": 355,
+    "lot.depthFeet": 247,
+    "lot.zoning": 410,
+    "lot.topography": 350,
+    "building.livingArea": 100,
+    "building.yearBuilt": 108,
+    "sale.price": 320,
+    "sale.date": 495
+  },
+  "validation": {
+    "statusCounts": {
+      "verified_vacant": 51,
+      "probable_vacant": 388,
+      "improved": 114,
+      "unclear": 3
+    },
+    "averageScore": 65.2,
+    "averageFieldCompleteness": 88.2
   },
   "compCandidatesWithin25MiAnd4xAcreage": {
-    "3+": 139,
-    "1-2": 1
+    "not_land": 117,
+    "3+": 428,
+    "0": 1,
+    "1-2": 10
   },
   "notes": [
-    "Counts describe this local cached Cleveland dataset only.",
+    "Counts describe only the selected cached markets in this export.",
     "No owner names, mailing addresses, phone numbers, or email addresses were exported.",
-    "Coordinates are provider points/parcel centroids, not parcel-boundary polygons."
+    "Coordinates are provider points/parcel centroids, not parcel-boundary polygons.",
+    "vacantLot is a candidate seed; validation labels and scores classify vacancy confidence without excluding records."
   ]
 }
