@@ -6,8 +6,8 @@ const subject = landRecords[0];
 
 describe('real Cleveland dataset', () => {
   it('exports the expected share-safe records', () => {
-    expect(dataset.recordCount).toBe(140);
-    expect(landRecords).toHaveLength(140);
+    expect(dataset.recordCount).toBe(556);
+    expect(landRecords).toHaveLength(556);
     const forbidden = new Set(['mailingaddress', 'phone', 'email', 'ownername', 'fullname']);
     const scan = (value: unknown): void => {
       if (Array.isArray(value)) { value.forEach(scan); return; }
