@@ -3,6 +3,8 @@ import type { LandRecord, ParcelValidation, ParcelValidationStatus } from '../ty
 export type ParcelValidationInput = Omit<LandRecord, 'validation'>;
 
 const AMBIGUOUS_TYPES = new Set(['', 'general', 'unknown', 'unspecified', 'other', 'n/a', 'null']);
+const VACANT_TYPES = new Set(['vacant land', 'vacant lot', 'vacant residential', 'vacant commercial', 'vacant agricultural', 'vacant industrial']);
+const NON_VACANT_TYPES = new Set(['non-vacant land', 'non vacant land', 'not vacant land', 'occupied land']);
 const LAND_COMPATIBLE_TYPES = new Set(['recreational', 'range land', 'agricultural', 'farm', 'ranch', 'forest', 'undeveloped land', 'unimproved land']);
 const IMPROVED_TYPE_TOKENS = ['apartment', 'office', 'mixed use', 'parking garage', 'church', 'worship', 'government'];
 const COMPLETENESS_FIELDS = 10;
@@ -17,7 +19,8 @@ function positive(value: number | null | undefined): value is number {
 
 function validCoordinates(record: ParcelValidationInput): boolean {
   const { lat, lng } = record.address;
-  return Number.isFinite(lat) && Math.abs(lat) <= 90 && Number.isFinite(lng) && Math.abs(lng) <= 180;
+  return typeof lat === 'number' && Number.isFinite(lat) && Math.abs(lat) <= 90
+    && typeof lng === 'number' && Number.isFinite(lng) && Math.abs(lng) <= 180;
 }
 
 function completeness(record: ParcelValidationInput): number {
@@ -74,9 +77,10 @@ function acreageConflict(record: ParcelValidationInput): boolean {
 export function validateLandRecord(record: ParcelValidationInput): ParcelValidation {
   const type = record.propertyTypeDetail?.trim() ?? '';
   const normalizedType = type.toLowerCase();
-  const vacantType = normalizedType.includes('vacant');
+  const vacantType = VACANT_TYPES.has(normalizedType);
+  const explicitlyNonVacant = NON_VACANT_TYPES.has(normalizedType);
   const landCompatible = vacantType || LAND_COMPATIBLE_TYPES.has(normalizedType);
-  const knownImprovedType = IMPROVED_TYPE_TOKENS.some(token => normalizedType.includes(token));
+  const knownImprovedType = explicitlyNonVacant || IMPROVED_TYPE_TOKENS.some(token => normalizedType.includes(token));
   const ambiguousType = AMBIGUOUS_TYPES.has(normalizedType);
   const hasCandidate = record.flags.includes('vacantLot');
   const hasVacantFlag = record.flags.includes('vacant');

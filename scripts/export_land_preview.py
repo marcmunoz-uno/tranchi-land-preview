@@ -14,6 +14,8 @@ from datetime import datetime, timezone
 
 VALIDATION_STATUSES = ('verified_vacant', 'probable_vacant', 'improved', 'unclear')
 AMBIGUOUS_TYPES = {'', 'general', 'unknown', 'unspecified', 'other', 'n/a', 'null'}
+VACANT_TYPES = {'vacant land', 'vacant lot', 'vacant residential', 'vacant commercial', 'vacant agricultural', 'vacant industrial'}
+NON_VACANT_TYPES = {'non-vacant land', 'non vacant land', 'not vacant land', 'occupied land'}
 LAND_COMPATIBLE_TYPES = {'recreational', 'range land', 'agricultural', 'farm', 'ranch', 'forest', 'undeveloped land', 'unimproved land'}
 IMPROVED_TYPE_TOKENS = ('apartment', 'office', 'mixed use', 'parking garage', 'church', 'worship', 'government')
 COVERAGE_FIELDS = (
@@ -25,6 +27,8 @@ COVERAGE_FIELDS = (
 
 
 def number(value):
+    if isinstance(value, bool):
+        return None
     try:
         parsed = float(value)
         return parsed if math.isfinite(parsed) else None
@@ -35,7 +39,9 @@ def number(value):
 def first_number(source, keys):
     for key in keys:
         if key in source and source[key] is not None:
-            return number(source[key])
+            parsed = number(source[key])
+            if parsed is not None:
+                return parsed
     return None
 
 
@@ -60,8 +66,8 @@ def valid_coordinates(record):
     lat = record['address'].get('lat')
     lng = record['address'].get('lng')
     return (
-        isinstance(lat, (int, float)) and math.isfinite(lat) and abs(lat) <= 90
-        and isinstance(lng, (int, float)) and math.isfinite(lng) and abs(lng) <= 180
+        isinstance(lat, (int, float)) and not isinstance(lat, bool) and math.isfinite(lat) and abs(lat) <= 90
+        and isinstance(lng, (int, float)) and not isinstance(lng, bool) and math.isfinite(lng) and abs(lng) <= 180
     )
 
 
@@ -82,6 +88,12 @@ def field_completeness(record):
     return round(sum(checks) / len(checks) * 100)
 
 
+def number_text(value):
+    if isinstance(value, float) and value.is_integer() and abs(value) < 1e21:
+        return str(int(value))
+    return str(value)
+
+
 def building_improvements(record):
     building = record.get('building') or {}
     improvements = []
@@ -94,7 +106,7 @@ def building_improvements(record):
     for field, label in fields:
         value = building.get(field)
         if positive(value):
-            improvements.append(f'Building {label} is present ({value:g}).')
+            improvements.append(f'Building {label} is present ({number_text(value)}).')
     return improvements
 
 
@@ -117,9 +129,10 @@ def validate_record(record):
     """Return vacancy confidence, human reasons, and core-field completeness."""
     property_type = (record.get('propertyTypeDetail') or '').strip()
     normalized_type = property_type.lower()
-    vacant_type = 'vacant' in normalized_type
+    vacant_type = normalized_type in VACANT_TYPES
+    explicitly_non_vacant = normalized_type in NON_VACANT_TYPES
     land_compatible = vacant_type or normalized_type in LAND_COMPATIBLE_TYPES
-    known_improved_type = any(token in normalized_type for token in IMPROVED_TYPE_TOKENS)
+    known_improved_type = explicitly_non_vacant or any(token in normalized_type for token in IMPROVED_TYPE_TOKENS)
     ambiguous_type = normalized_type in AMBIGUOUS_TYPES
     flags = record.get('flags') or []
     has_candidate = 'vacantLot' in flags
@@ -317,9 +330,12 @@ def build_coverage(records):
 
 def export_records(db_path):
     connection = sqlite3.connect(f'file:{db_path}?mode=ro', uri=True)
-    rows = connection.execute(
-        "SELECT payload_json,last_seen FROM properties WHERE quicklists_true LIKE '%vacantLot%'"
-    ).fetchall()
+    try:
+        rows = connection.execute(
+            "SELECT payload_json,last_seen FROM properties WHERE quicklists_true LIKE '%vacantLot%'"
+        ).fetchall()
+    finally:
+        connection.close()
     records = []
     for raw, last_seen in rows:
         payload = json.loads(raw)

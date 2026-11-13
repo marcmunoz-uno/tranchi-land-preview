@@ -192,6 +192,21 @@ describe('findForbiddenFields', () => {
     expect(findForbiddenFields(['ownerOccupied', null, 3])).toEqual([]);
     expect(findForbiddenFields({ ownerOccupied: true, flags: ['vacantLot'] })).toEqual([]);
   });
+  it('does not verify explicitly non-vacant labels through substring matching', () => {
+    for (const propertyTypeDetail of ['Non-Vacant Land', 'Non Vacant Land', 'Not Vacant Land', 'Occupied Land']) {
+      const result = validateLandRecord(recordWith({ propertyTypeDetail }));
+      expect(result.status).toBe('improved');
+      expect(result.score).toBeLessThan(50);
+    }
+  });
+
+  it('retains records with missing coordinates as unclear rather than verified', () => {
+    const result = validateLandRecord(recordWith({
+      address: { ...baseRecord.address, lat: null, lng: null },
+    }));
+    expect(result.status).toBe('unclear');
+    expect(result.reasons.some(reason => reason.includes('valid coordinates'))).toBe(true);
+  });
 });
 
 describe('generated multi-market validation', () => {

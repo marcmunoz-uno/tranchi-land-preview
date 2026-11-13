@@ -13,6 +13,13 @@ export function nonNegativeAmount(value: string | number) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 }
 
+export function hasValidCoordinates(record: { address: { lat: number | null; lng: number | null } }) {
+  return typeof record.address.lat === 'number' && Number.isFinite(record.address.lat)
+    && typeof record.address.lng === 'number' && Number.isFinite(record.address.lng)
+    && record.address.lat >= -90 && record.address.lat <= 90
+    && record.address.lng >= -180 && record.address.lng <= 180;
+}
+
 const INTENT: Record<string, number> = { failedListing: 3, expiredListing: 3, canceledListing: 3, listedBelowMarketPrice: 2, forSaleByOwner: 2 };
 const PRESSURE: Record<string, number> = { preforeclosure: 4, noticeOfDefault: 4, noticeOfLisPendens: 4, noticeOfSale: 4, activeAuction: 4, taxDefault: 3, involuntaryLien: 3, openLien: 2 };
 const MOTIVATION: Record<string, number> = { vacant: 2, mailingAddressVacant: 2, tiredLandlord: 2, inherited: 2, absenteeOwner: 1, absenteeOwnerOutOfState: 1, outOfStateOwner: 1, seniorOwner: 1, corporateOwned: 1, trustOwned: 1 };
@@ -73,10 +80,11 @@ export function filterLandRecords(records: LandRecord[], filters: FilterState) {
   });
 }
 
-export function distanceMiles(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+export function distanceMiles(a: { lat: number | null; lng: number | null }, b: { lat: number | null; lng: number | null }) {
+  if (!hasValidCoordinates({ address: a }) || !hasValidCoordinates({ address: b })) return Number.POSITIVE_INFINITY;
   const rad = Math.PI / 180;
-  const lat1 = a.lat * rad, lat2 = b.lat * rad;
-  const dLat = lat2 - lat1, dLng = (b.lng - a.lng) * rad;
+  const lat1 = a.lat! * rad, lat2 = b.lat! * rad;
+  const dLat = lat2 - lat1, dLng = (b.lng! - a.lng!) * rad;
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
   return 3958.7613 * 2 * Math.asin(Math.min(1, Math.sqrt(h)));
 }
@@ -86,9 +94,9 @@ function monthsBetween(from: Date, to: Date) {
 }
 
 export function findLandComps(subject: LandRecord, records: LandRecord[], settings: CompSettings, asOf: Date): LandComp[] {
-  if (!subject.lot.acres || subject.lot.acres <= 0 || subject.validation?.status === 'improved' || subject.validation?.status === 'unclear') return [];
+  if (!subject.lot.acres || subject.lot.acres <= 0 || !hasValidCoordinates(subject) || subject.validation?.status === 'improved' || subject.validation?.status === 'unclear') return [];
   return records.flatMap(record => {
-    if (record.id === subject.id || record.validation?.status === 'improved' || record.validation?.status === 'unclear' || !record.lot.acres || !record.sale.price || !record.sale.date || record.sale.transactionTypeCode !== 'B') return [];
+    if (record.id === subject.id || record.validation?.status === 'improved' || record.validation?.status === 'unclear' || !hasValidCoordinates(record) || !record.lot.acres || !record.sale.price || !record.sale.date || record.sale.transactionTypeCode !== 'B') return [];
     const ratio = record.lot.acres / subject.lot.acres!;
     if (ratio < 1 / settings.acreageTolerance || ratio > settings.acreageTolerance) return [];
     const distance = distanceMiles(subject.address, record.address);

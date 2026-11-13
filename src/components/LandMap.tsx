@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Map as MapLibreMap, Marker, NavigationControl, AttributionControl, LngLatBounds } from 'maplibre-gl';
 import { Layers, LocateFixed } from 'lucide-react';
 import type { LandRecord } from '../types';
-import { acresLabel, addressLabel } from '../lib/analysis';
+import { acresLabel, addressLabel, hasValidCoordinates } from '../lib/analysis';
 
 const STREET_STYLE = {
   version: 8 as const,
@@ -26,6 +26,7 @@ export function LandMap({ records, selectedId, onSelect }: { records: LandRecord
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [satellite, setSatellite] = useState(false);
+  const mappableRecords = records.filter(hasValidCoordinates);
 
   useEffect(() => {
     if (!container.current || map.current) return;
@@ -61,7 +62,7 @@ export function LandMap({ records, selectedId, onSelect }: { records: LandRecord
   useEffect(() => {
     if (!map.current || !ready) return;
     markers.current.forEach(marker => marker.remove());
-    markers.current = records.map(record => {
+    markers.current = mappableRecords.map(record => {
       const element = document.createElement('button');
       element.type = 'button';
       element.className = `land-marker${record.id === selectedId ? ' is-selected' : ''}`;
@@ -69,22 +70,22 @@ export function LandMap({ records, selectedId, onSelect }: { records: LandRecord
       element.title = `${addressLabel(record)} · ${acresLabel(record.lot.acres)}`;
       element.setAttribute('aria-label', `Select ${addressLabel(record)}, ${acresLabel(record.lot.acres)}`);
       element.addEventListener('click', event => { event.stopPropagation(); onSelect(record.id); });
-      return new Marker({ element, anchor: 'center' }).setLngLat([record.address.lng, record.address.lat]).addTo(map.current!);
+      return new Marker({ element, anchor: 'center' }).setLngLat([record.address.lng!, record.address.lat!]).addTo(map.current!);
     });
     return () => { markers.current.forEach(marker => marker.remove()); markers.current = []; };
   }, [records, selectedId, ready, onSelect]);
 
   useEffect(() => {
-    if (!map.current || !ready || !records.length) return;
+    if (!map.current || !ready || !mappableRecords.length) return;
     const bounds = new LngLatBounds();
-    records.forEach(record => bounds.extend([record.address.lng, record.address.lat]));
+    mappableRecords.forEach(record => bounds.extend([record.address.lng!, record.address.lat!]));
     map.current.fitBounds(bounds, { padding: 56, maxZoom: 13, duration: 400 });
   }, [records.map(record => record.id).join('|'), ready]);
 
   const showAll = () => {
-    if (!map.current || !records.length) return;
+    if (!map.current || !mappableRecords.length) return;
     const bounds = new LngLatBounds();
-    records.forEach(record => bounds.extend([record.address.lng, record.address.lat]));
+    mappableRecords.forEach(record => bounds.extend([record.address.lng!, record.address.lat!]));
     map.current.fitBounds(bounds, { padding: 56, maxZoom: 13, duration: 400 });
   };
 

@@ -18,8 +18,8 @@ export type LandRecord = {
     zip: string | null;
     county: string | null;
     countyFips: string | null;
-    lat: number;
-    lng: number;
+    lat: number | null;
+    lng: number | null;
     geoStatus: string | null;
   };
   propertyTypeDetail: string | null;

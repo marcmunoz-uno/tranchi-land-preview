@@ -70,6 +70,13 @@ describe('real Cleveland dataset', () => {
     expect(analyzeLand(improvedSubject, validComps).available).toBe(false);
   });
 
+  it('rejects missing coordinates from comp subjects and candidates', () => {
+    const noCoordinates = { ...subject, address: { ...subject.address, lat: null, lng: null } };
+    expect(findLandComps(noCoordinates, landRecords, DEFAULT_COMP_SETTINGS, new Date(dataset.generatedAt))).toEqual([]);
+    const poolWithMissing = landRecords.map(record => record.id === subject.id ? record : { ...record, address: { ...record.address, lat: null, lng: null } });
+    expect(findLandComps(subject, poolWithMissing, DEFAULT_COMP_SETTINGS, new Date(dataset.generatedAt))).toEqual([]);
+  });
+
   it('normalizes offer inputs to finite nonnegative amounts', () => {
     expect(nonNegativeAmount(-10000)).toBe(0);
     expect(nonNegativeAmount('not-a-number')).toBe(0);
