@@ -4,7 +4,7 @@
 
 - Local integrated preview: `http://127.0.0.1:3213/`
 - Live: `https://tranchi-land-preview.onrender.com/`
-- Latest verified application commit: `98f907e` (`fix: harden coordinates and vacancy type validation`)
+- Latest verified application commit: `2d19454` (`fix: keep Escape handling on the topmost dialog`)
 - Alphapipe PR: https://github.com/tranchi-labs/tranchi-alpha-pipeline/pull/1
 
 ## Automated checks
@@ -33,7 +33,7 @@
 11. Two-parcel comparison works and is restored from a compare URL.
 12. Shared searches restore shortlisted parcel IDs.
 13. Real PDF downloads work: 20,168 bytes with an estimate and 10,101 bytes with an honest insufficient-comps state.
-14. Escape closes the comp/offer dialog.
+14. Escape closes the comp/offer dialog; when opened from comparison, only the topmost PDF handles Escape and comparison returns after it closes.
 15. Mobile share has an accessible name.
 16. The 390px mobile layout has no horizontal overflow; filter drawer, list, shortlist, comparison, and full-width inspector work with zero JavaScript errors.
 
