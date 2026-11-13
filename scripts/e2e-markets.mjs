@@ -35,7 +35,9 @@ try {
   assert.deepEqual(errors, []);
   console.log('PASS zero JavaScript errors');
 
-  await page.goto(`${base}?zoning=not-a-real-zone`, { waitUntil: 'networkidle' });
+  const unsupportedZoningUrl = new URL(base);
+  unsupportedZoningUrl.searchParams.set('zoning', 'not-a-real-zone');
+  await page.goto(unsupportedZoningUrl.toString(), { waitUntil: 'networkidle' });
   await page.locator('.url-warning').waitFor();
   assert.match(await page.locator('.url-warning').innerText(), /invalid and were safely reset/);
   assert.equal(await page.locator('.land-marker').count(), 439);

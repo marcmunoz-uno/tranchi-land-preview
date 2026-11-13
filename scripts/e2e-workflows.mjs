@@ -97,7 +97,12 @@ try {
   assert.equal(await page.locator('.offer-dialog').count(), 0);
   console.log('PASS Escape closes the comp and offer dialog');
 
-  await page.goto(`${base}?min=-2&motivation=invalid&saved=unknown&compare=unknown`, { waitUntil: 'networkidle' });
+  const corruptUrl = new URL(base);
+  corruptUrl.searchParams.set('min', '-2');
+  corruptUrl.searchParams.set('motivation', 'invalid');
+  corruptUrl.searchParams.set('saved', 'unknown');
+  corruptUrl.searchParams.set('compare', 'unknown');
+  await page.goto(corruptUrl.toString(), { waitUntil: 'networkidle' });
   await page.locator('.land-marker').first().waitFor();
   assert.equal(await page.locator('.land-marker').count(), 439);
   assert.match(await page.locator('.toast').innerText(), /invalid and were safely reset/);
