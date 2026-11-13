@@ -86,7 +86,7 @@ try {
 
   await page.goto(`${base}?min=-2&motivation=invalid&saved=unknown&compare=unknown`, { waitUntil: 'networkidle' });
   await page.locator('.land-marker').first().waitFor();
-  assert.equal(await page.locator('.land-marker').count(), 140);
+  assert.equal(await page.locator('.land-marker').count(), 439);
   assert.match(await page.locator('.toast').innerText(), /invalid and were safely reset/);
   console.log('PASS corrupt shared URL safely falls back to all parcels');
 

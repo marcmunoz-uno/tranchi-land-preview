@@ -1,7 +1,9 @@
 import type { CompSettings, FilterState, LandComp, LandRecord } from '../types';
 
+import { passesMarketFilter, passesVacancyFilter } from './vacancy';
+
 export const DEFAULT_FILTERS: FilterState = {
-  search: '', minAcres: '', maxAcres: '', zoning: 'all', topography: 'all',
+  search: '', market: 'all', vacancy: 'likely', minAcres: '', maxAcres: '', zoning: 'all', topography: 'all',
   motivation: 'all', armsLengthOnly: false, sort: 'score',
 };
 export const DEFAULT_COMP_SETTINGS: CompSettings = { radiusMiles: 25, maxAgeMonths: 120, acreageTolerance: 4 };
@@ -49,6 +51,7 @@ export function filterLandRecords(records: LandRecord[], filters: FilterState) {
   const max = filters.maxAcres === '' ? null : Number(filters.maxAcres);
   return records.filter(record => {
     if (query && !`${addressLabel(record)} ${record.apn ?? ''} ${record.address.zip ?? ''}`.toLowerCase().includes(query)) return false;
+    if (!passesMarketFilter(record, filters.market) || !passesVacancyFilter(record, filters.vacancy)) return false;
     if (min !== null && (record.lot.acres === null || record.lot.acres < min)) return false;
     if (max !== null && (record.lot.acres === null || record.lot.acres > max)) return false;
     if (filters.zoning !== 'all' && record.lot.zoning !== filters.zoning) return false;

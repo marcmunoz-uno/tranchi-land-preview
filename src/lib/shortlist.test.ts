@@ -57,7 +57,7 @@ describe('shareable workspace URLs', () => {
   it('round-trips filters, shortlist, compare view, scope, layout, and selected parcel', () => {
     const state: WorkspaceUrlState = {
       filters: {
-        search: 'Cleveland 44105', minAcres: '0.1', maxAcres: '2.5', zoning: 'Residential',
+        search: 'Cleveland 44105', market: 'Bastrop, TX', vacancy: 'include_unclear', minAcres: '0.1', maxAcres: '2.5', zoning: 'Residential',
         topography: 'Level', motivation: 'absentee', armsLengthOnly: true, sort: 'landValue',
       },
       shortlistedIds: ['parcel-a', 'parcel-b', 'parcel-c'],

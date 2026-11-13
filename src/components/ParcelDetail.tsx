@@ -3,6 +3,7 @@ import { BarChart3, Check, Info, Share2, X } from 'lucide-react';
 import type { CompSettings, LandRecord } from '../types';
 import { acresLabel, addressLabel, analyzeLand, dateLabel, DEFAULT_COMP_SETTINGS, findLandComps, landSellerSignal, money, number } from '../lib/analysis';
 import { dataset } from '../data/land';
+import { ValidationBadge } from './ValidationBadge';
 
 function Fact({ label, value, title }: { label: string; value: string; title?: string }) {
   return <div className="fact" title={title}><span>{label}</span><strong>{value}</strong></div>;
@@ -46,6 +47,11 @@ export function ParcelDetail({ record, onClose, onShare, shared }: {
       </div>
       <div className="detail-scroll">
         {tab === 'overview' ? <>
+          <section className="detail-section validation-section">
+            <div className="section-heading"><h3>Vacancy evidence</h3><ValidationBadge validation={record.validation} /></div>
+            <p className="validation-reasons">{record.validation.reasons.map(reason => <span key={reason}>{reason}</span>)}</p>
+            <p className="section-note">{record.validation.fieldCompleteness}% of core parcel fields are present. The score describes vacancy evidence, not provider accuracy.</p>
+          </section>
           <section className="detail-section">
             <h3>Parcel facts</h3>
             <div className="facts-grid">

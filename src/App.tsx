@@ -174,8 +174,8 @@ export default function App() {
     setShared(true); setToast('Parcel and search link copied'); window.setTimeout(() => setShared(false), 2200);
   };
   const exportCsv = () => {
-    const headers = ['Address', 'APN', 'City', 'State', 'ZIP', 'Acres', 'Square feet', 'Zoning', 'Topography', 'Frontage feet', 'Assessor land value', 'Last sale price', 'Last sale date', 'Seller signal', 'Motivation flags', 'Latitude', 'Longitude'];
-    const rows = filtered.map(record => [addressLabel(record), record.apn, record.address.city, record.address.state, record.address.zip, record.lot.acres, record.lot.squareFeet, record.lot.zoning, record.lot.topography, record.lot.frontageFeet, record.assessment.landMarketValue, record.sale.price, record.sale.date, landSellerSignal(record).score, record.flags.join('|'), record.address.lat, record.address.lng]);
+    const headers = ['Address', 'APN', 'City', 'State', 'ZIP', 'Acres', 'Square feet', 'Zoning', 'Topography', 'Frontage feet', 'Assessor land value', 'Last sale price', 'Last sale date', 'Seller signal', 'Vacancy status', 'Vacancy score', 'Field completeness', 'Motivation flags', 'Latitude', 'Longitude'];
+    const rows = filtered.map(record => [addressLabel(record), record.apn, record.address.city, record.address.state, record.address.zip, record.lot.acres, record.lot.squareFeet, record.lot.zoning, record.lot.topography, record.lot.frontageFeet, record.assessment.landMarketValue, record.sale.price, record.sale.date, landSellerSignal(record).score, record.validation.status, record.validation.score, `${record.validation.fieldCompleteness}%`, record.flags.join('|'), record.address.lat, record.address.lng]);
     const csv = [headers, ...rows].map(row => row.map(csvCell).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
     const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `tranchi-land-${filtered.length}-parcels.csv`; link.click(); URL.revokeObjectURL(link.href);
@@ -189,7 +189,7 @@ export default function App() {
           <div className="brand-mark"><Mountain size={20} /></div>
           <div><span className="brand-name">TRANCHI <span>LAND</span></span><span className="brand-subtitle">Land flipping workspace</span></div>
         </div>
-        <div className="dataset-pill"><span className="live-dot" /> Interactive preview <span>·</span> Cleveland, OH</div>
+        <div className="dataset-pill"><span className="live-dot" /> Interactive preview <span>·</span> {dataset.markets.length} markets</div>
         <div className="header-actions">
           <button className="secondary-button shortlist-header-button" onClick={() => setShortlistOpen(true)} aria-label={`Open shortlist, ${shortlistedIds.length} parcels`}><Bookmark size={16} /><span className="header-button-label">Shortlist</span><span className="shortlist-count">{shortlistedIds.length}</span></button>
           <button className="secondary-button share-search-button" onClick={shareSearch}><Share2 size={16} /><span className="header-button-label">Share search</span></button>
@@ -218,7 +218,7 @@ export default function App() {
         </div>
       </div>
 
-      <div className="data-notice"><Info size={14} /><span>Real public-record sample, not a live nationwide feed. No owner contact details, skip tracing, contracts, or outbound actions.</span></div>
+      <div className="data-notice"><Info size={14} /><span>Real cached public records from Cleveland OH, Bastrop TX, and Lehigh Acres FL. No owner contact details, skip tracing, contracts, or outbound actions.</span></div>
       <div className="shortlist-scope-bar">
         <div className="scope-toggle" aria-label="Parcel browsing scope">
           <button className={!shortlistOnly ? 'active' : ''} aria-pressed={!shortlistOnly} onClick={() => setShortlistOnly(false)}>All parcels</button>

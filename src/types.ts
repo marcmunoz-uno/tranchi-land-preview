@@ -72,8 +72,11 @@ export type LandDataset = {
 
 export type MotivationFilter = 'all' | 'absentee' | 'failed' | 'pressure' | 'entity' | 'equity';
 export type SortMode = 'score' | 'acresAsc' | 'acresDesc' | 'landValue' | 'recentSale';
+export type VacancyFilter = 'likely' | 'include_unclear' | 'all';
 export type FilterState = {
   search: string;
+  market: string;
+  vacancy: VacancyFilter;
   minAcres: string;
   maxAcres: string;
   zoning: string;

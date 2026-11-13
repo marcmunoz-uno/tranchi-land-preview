@@ -1,6 +1,7 @@
 import { ArrowUpRight, MapPin } from 'lucide-react';
 import type { LandRecord } from '../types';
 import { acresLabel, addressLabel, dateLabel, landSellerSignal, money } from '../lib/analysis';
+import { ValidationBadge } from './ValidationBadge';
 
 export function ParcelList({ records, selectedId, onSelect, onReset }: {
   records: LandRecord[];
@@ -28,6 +29,7 @@ export function ParcelList({ records, selectedId, onSelect, onReset }: {
             </span>
             <span className="parcel-facts"><strong>{acresLabel(record.lot.acres)}</strong><span>{record.lot.zoning ?? 'Zoning unknown'}</span><span>{record.lot.topography ?? 'Terrain unknown'}</span></span>
             <span className="parcel-reason">{signal.reasons[0]}</span>
+            <ValidationBadge validation={record.validation} compact />
             <span className="parcel-card-bottom">
               <span><small>Assessor land value</small><strong>{money(record.assessment.landMarketValue)}</strong></span>
               <span className="signal-chip" title={signal.reasons.join(' · ')}>{signal.score} seller signal</span>

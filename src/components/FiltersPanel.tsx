@@ -1,6 +1,7 @@
 import { RotateCcw, Search } from 'lucide-react';
 import type { FilterState, LandRecord, MotivationFilter, SortMode } from '../types';
 import { DEFAULT_FILTERS } from '../lib/analysis';
+import { MarketCoverage } from './MarketCoverage';
 
 export function FiltersPanel({ records, filters, onChange, onReset }: {
   records: LandRecord[];
@@ -20,6 +21,14 @@ export function FiltersPanel({ records, filters, onChange, onReset }: {
       <label className="search-field">
         <Search size={16} />
         <input value={filters.search} onChange={e => update('search', e.target.value)} placeholder="Address, APN, or ZIP" aria-label="Search address, APN, or ZIP" />
+      </label>
+      <MarketCoverage records={records} value={filters.market} onChange={market => update('market', market)} />
+      <label className="field-group"><span className="field-label">Parcel evidence</span>
+        <select value={filters.vacancy} onChange={e => update('vacancy', e.target.value as FilterState['vacancy'])}>
+          <option value="likely">Verified + likely vacant</option>
+          <option value="include_unclear">Include records needing review</option>
+          <option value="all">All candidates, including improved</option>
+        </select>
       </label>
       <div className="field-group">
         <span className="field-label">Lot size</span>
@@ -65,7 +74,7 @@ export function FiltersPanel({ records, filters, onChange, onReset }: {
       </label>
       <div className="unavailable-filters">
         <span>Not in this dataset</span>
-        <p>Flood zone, wetlands, canal access, and parcel-boundary polygons are not available in the Cleveland preview.</p>
+        <p>Flood zone, wetlands, canal access, and parcel-boundary polygons are not available in this three-market preview.</p>
       </div>
       {JSON.stringify(filters) !== JSON.stringify(DEFAULT_FILTERS) && <button className="text-button" onClick={onReset}>Clear all filters</button>}
     </aside>

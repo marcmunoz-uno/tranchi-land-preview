@@ -25,8 +25,8 @@ async function desktop() {
   const { context, page, errors } = await newPage({ width: 1440, height: 1000 });
   await page.goto(baseURL, { waitUntil: 'networkidle' });
   await page.locator('.land-marker').first().waitFor();
-  assert.equal(await page.locator('.land-marker').count(), 140);
-  pass('desktop real map data', '140 parcel markers rendered');
+  assert.equal(await page.locator('.land-marker').count(), 439);
+  pass('desktop real map data', '439 verified/probable parcel markers rendered');
   await page.screenshot({ path: path.join(outDir, 'screenshots', 'desktop-map.png') });
 
   await page.locator('.land-marker').first().click();
@@ -44,9 +44,9 @@ async function desktop() {
 
   await page.getByRole('button', { name: 'List', exact: true }).click();
   await page.getByLabel('Max acres').fill('0.1');
-  await page.waitForFunction(() => document.querySelectorAll('.parcel-card').length === 48);
-  assert.match(await page.locator('.workspace-toolbar p').innerText(), /48 of 140/);
-  pass('filters and list view', 'max 0.1 acres returns the correct 48 records');
+  await page.waitForFunction(() => document.querySelectorAll('.parcel-card').length === 104);
+  assert.match(await page.locator('.workspace-toolbar p').innerText(), /104 of 556/);
+  pass('filters and list view', 'max 0.1 acres returns the correct 104 records');
 
   await page.getByRole('button', { name: /Save search/ }).click();
   await page.getByLabel(/Name this filter set/).fill('QA small lots');
@@ -61,9 +61,10 @@ async function desktop() {
   const file = await download.path();
   const csv = await fs.readFile(file, 'utf8');
   const lines = csv.trim().split('\n');
-  assert.equal(lines.length, 49);
+  assert.equal(lines.length, 105);
   assert.match(lines[0], /Seller signal/);
-  pass('CSV export', '48 filtered records + header downloaded; no contact columns');
+  assert.match(lines[0], /Vacancy status/);
+  pass('CSV export', '104 filtered records + header downloaded; no contact columns');
 
   await page.getByRole('button', { name: 'Clear all filters' }).click();
   await page.getByLabel('Search address, APN, or ZIP').fill('definitely-no-such-parcel-xyz');
@@ -86,7 +87,7 @@ async function mobile() {
   await page.getByLabel('Max acres').fill('0.1');
   await page.getByRole('button', { name: 'Close filters', exact: true }).click();
   await page.getByRole('button', { name: 'List', exact: true }).click();
-  assert.equal(await page.locator('.parcel-card').count(), 48);
+  assert.equal(await page.locator('.parcel-card').count(), 104);
   await page.locator('.parcel-card').first().click();
   await page.locator('.detail-panel').waitFor();
   const box = await page.locator('.detail-panel').boundingBox();
@@ -96,7 +97,7 @@ async function mobile() {
   await page.getByRole('button', { name: 'Close parcel details' }).click();
   await page.screenshot({ path: path.join(outDir, 'screenshots', 'mobile-list.png') });
   assert.deepEqual(errors, []);
-  pass('mobile interactions and console', 'filter drawer, 48-card list, full-width inspector, close path, zero JS errors');
+  pass('mobile interactions and console', 'filter drawer, 104-card list, full-width inspector, close path, zero JS errors');
   await context.close();
 }
 

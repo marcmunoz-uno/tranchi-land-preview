@@ -6,7 +6,7 @@ export const MAX_COMPARE = 5;
 
 const MOTIVATIONS = new Set<MotivationFilter>(['all', 'absentee', 'failed', 'pressure', 'entity', 'equity']);
 const SORTS = new Set<SortMode>(['score', 'acresAsc', 'acresDesc', 'landValue', 'recentSale']);
-const SHARE_PARAMS = ['q', 'min', 'max', 'zoning', 'topo', 'motivation', 'arms', 'sort', 'saved', 'compare', 'scope'] as const;
+const SHARE_PARAMS = ['q', 'market', 'vacancy', 'min', 'max', 'zoning', 'topo', 'motivation', 'arms', 'sort', 'saved', 'compare', 'scope'] as const;
 
 export type WorkspaceUrlState = {
   filters: FilterState;
@@ -85,6 +85,16 @@ export function parseWorkspaceUrl(search: string, validIds: ReadonlySet<string>)
   let recovered = false;
 
   const query = params.get('q');
+  const market = params.get('market');
+  if (market !== null) {
+    if (market.length <= 100 && !/[\u0000-\u001f]/.test(market)) filters.market = market;
+    else recovered = true;
+  }
+  const vacancy = params.get('vacancy');
+  if (vacancy !== null) {
+    if (vacancy === 'likely' || vacancy === 'include_unclear' || vacancy === 'all') filters.vacancy = vacancy;
+    else recovered = true;
+  }
   if (query !== null) {
     if (query.length <= 120) filters.search = query;
     else recovered = true;
@@ -149,6 +159,8 @@ export function buildWorkspaceUrl(base: string | URL, state: WorkspaceUrlState):
   SHARE_PARAMS.forEach(param => url.searchParams.delete(param));
   const { filters } = state;
   if (filters.search !== DEFAULT_FILTERS.search) url.searchParams.set('q', filters.search.slice(0, 120));
+  if (filters.market !== DEFAULT_FILTERS.market) url.searchParams.set('market', filters.market);
+  if (filters.vacancy !== DEFAULT_FILTERS.vacancy) url.searchParams.set('vacancy', filters.vacancy);
   if (filters.minAcres !== DEFAULT_FILTERS.minAcres) url.searchParams.set('min', filters.minAcres);
   if (filters.maxAcres !== DEFAULT_FILTERS.maxAcres) url.searchParams.set('max', filters.maxAcres);
   if (filters.zoning !== DEFAULT_FILTERS.zoning) url.searchParams.set('zoning', filters.zoning);
