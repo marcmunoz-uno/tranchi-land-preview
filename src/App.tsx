@@ -1,14 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Bookmark, Check, ChevronDown, Download, Filter, Info, List, Map, Mountain, X } from 'lucide-react';
+import { Bookmark, BookmarkCheck, BookmarkPlus, Check, ChevronDown, Download, FileDown, Filter, Info, List, Map, Mountain, Share2, X } from 'lucide-react';
 import { dataset } from './data/land';
-import { addressLabel, DEFAULT_FILTERS, filterLandRecords, landSellerSignal } from './lib/analysis';
-import type { FilterState } from './types';
+import { acresLabel, addressLabel, DEFAULT_FILTERS, filterLandRecords, landSellerSignal } from './lib/analysis';
+import type { FilterState, LandRecord } from './types';
 import { LandMap } from './components/LandMap';
 import { FiltersPanel } from './components/FiltersPanel';
 import { ParcelList } from './components/ParcelList';
 import { ParcelDetail } from './components/ParcelDetail';
+import { ShortlistPanel } from './components/ShortlistPanel';
+import { CompareParcels } from './components/CompareParcels';
+import { CompOfferDialog } from './components/CompOfferDialog';
+import {
+  buildWorkspaceUrl,
+  loadShortlist,
+  MAX_COMPARE,
+  parseWorkspaceUrl,
+  persistShortlist,
+  toggleShortlist,
+} from './lib/shortlist';
 
 const STORAGE_KEY = 'tranchi.land.savedSearches.v1';
+const VALID_PARCEL_IDS = new Set(dataset.records.map(record => record.id));
 type SavedSearch = { name: string; filters: FilterState };
 type ViewMode = 'map' | 'list';
 
@@ -26,22 +38,49 @@ function csvCell(value: unknown) {
   return `"${text.replace(/"/g, '""')}"`;
 }
 
+async function copyText(value: string) {
+  try { await navigator.clipboard.writeText(value); }
+  catch {
+    const input = document.createElement('textarea');
+    input.value = value;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    input.remove();
+  }
+}
+
 export default function App() {
-  const params = new URLSearchParams(window.location.search);
-  const initialParcel = params.get('parcel');
-  const [view, setView] = useState<ViewMode>(params.get('layout') === 'list' ? 'list' : 'map');
-  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
-  const [selectedId, setSelectedId] = useState<string | null>(() => dataset.records.some(r => r.id === initialParcel) ? initialParcel : dataset.records[0]?.id ?? null);
-  const [detailOpen, setDetailOpen] = useState(Boolean(initialParcel));
+  const [initialUrl] = useState(() => parseWorkspaceUrl(window.location.search, VALID_PARCEL_IDS));
+  const [view, setView] = useState<ViewMode>(initialUrl.view);
+  const [filters, setFilters] = useState<FilterState>(initialUrl.filters);
+  const [selectedId, setSelectedId] = useState<string | null>(initialUrl.selectedId ?? dataset.records[0]?.id ?? null);
+  const [detailOpen, setDetailOpen] = useState(Boolean(initialUrl.selectedId));
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>(loadSavedSearches);
   const [searchName, setSearchName] = useState('');
   const [saveOpen, setSaveOpen] = useState(false);
+  const [shortlistedIds, setShortlistedIds] = useState<string[]>(() => initialUrl.hasShortlistParam ? initialUrl.shortlistedIds : loadShortlist(localStorage, VALID_PARCEL_IDS));
+  const [compareIds, setCompareIds] = useState<string[]>(initialUrl.compareIds);
+  const [shortlistOnly, setShortlistOnly] = useState(initialUrl.shortlistOnly);
+  const [shortlistOpen, setShortlistOpen] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(initialUrl.compareOpen);
+  const [offerRecord, setOfferRecord] = useState<LandRecord | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [urlWarningDismissed, setUrlWarningDismissed] = useState(false);
   const [shared, setShared] = useState(false);
 
-  const filtered = useMemo(() => filterLandRecords(dataset.records, filters), [filters]);
+  const allFiltered = useMemo(() => filterLandRecords(dataset.records, filters), [filters]);
+  const filtered = useMemo(() => shortlistOnly ? allFiltered.filter(record => shortlistedIds.includes(record.id)) : allFiltered, [allFiltered, shortlistOnly, shortlistedIds]);
   const selected = dataset.records.find(record => record.id === selectedId) ?? null;
+  const shortlistedRecords = useMemo(() => shortlistedIds.flatMap(id => {
+    const record = dataset.records.find(item => item.id === id);
+    return record ? [record] : [];
+  }), [shortlistedIds]);
+  const compareRecords = useMemo(() => compareIds.flatMap(id => {
+    const record = dataset.records.find(item => item.id === id);
+    return record && shortlistedIds.includes(id) ? [record] : [];
+  }), [compareIds, shortlistedIds]);
   const latestCache = useMemo(() => dataset.records.map(r => r.cachedAt).sort().at(-1)?.slice(0, 10), []);
 
   useEffect(() => {
@@ -52,26 +91,32 @@ export default function App() {
   }, [filtered, selectedId]);
 
   useEffect(() => {
+    persistShortlist(localStorage, shortlistedIds);
+  }, [shortlistedIds]);
+
+  useEffect(() => {
+    const url = buildWorkspaceUrl(window.location.href, {
+      filters, shortlistedIds, compareIds, compareOpen, shortlistOnly, view, selectedId,
+    });
+    window.history.replaceState({}, '', url);
+  }, [filters, shortlistedIds, compareIds, compareOpen, shortlistOnly, view, selectedId]);
+
+  useEffect(() => {
+    if (compareOpen && compareRecords.length < 2) setCompareOpen(false);
+  }, [compareOpen, compareRecords.length]);
+
+  useEffect(() => {
     if (!toast) return;
-    const timer = window.setTimeout(() => setToast(null), 2600);
+    const timer = window.setTimeout(() => setToast(null), 6000);
     return () => window.clearTimeout(timer);
   }, [toast]);
 
   const selectParcel = useCallback((id: string) => {
     setSelectedId(id);
     setDetailOpen(true);
-    const url = new URL(window.location.href);
-    url.searchParams.set('parcel', id);
-    window.history.replaceState({}, '', url);
   }, []);
 
-  const changeView = (next: ViewMode) => {
-    setView(next);
-    const url = new URL(window.location.href);
-    if (next === 'list') url.searchParams.set('layout', 'list'); else url.searchParams.delete('layout');
-    window.history.replaceState({}, '', url);
-  };
-
+  const changeView = (next: ViewMode) => setView(next);
   const resetFilters = () => setFilters(DEFAULT_FILTERS);
   const saveSearch = () => {
     const name = searchName.trim().slice(0, 60);
@@ -86,15 +131,47 @@ export default function App() {
     setSavedSearches(next);
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* no-op */ }
   };
+
+  const toggleParcel = (record: LandRecord) => {
+    const removing = shortlistedIds.includes(record.id);
+    setShortlistedIds(ids => toggleShortlist(ids, record.id, VALID_PARCEL_IDS));
+    if (removing) setCompareIds(ids => ids.filter(id => id !== record.id));
+    setToast(removing ? 'Removed from shortlist' : 'Added to shortlist');
+  };
+  const removeParcel = (id: string) => {
+    setShortlistedIds(ids => ids.filter(savedId => savedId !== id));
+    setCompareIds(ids => ids.filter(compareId => compareId !== id));
+    setToast('Removed from shortlist');
+  };
+  const clearShortlist = () => {
+    setShortlistedIds([]);
+    setCompareIds([]);
+    setCompareOpen(false);
+    setToast('Shortlist cleared on this device');
+  };
+  const toggleCompare = (id: string) => {
+    setCompareIds(ids => ids.includes(id) ? ids.filter(compareId => compareId !== id) : ids.length < MAX_COMPARE ? [...ids, id] : ids);
+  };
+  const openComparison = () => {
+    if (compareIds.length < 2) return;
+    setShortlistOpen(false);
+    setCompareOpen(true);
+  };
+  const shareSearch = async () => {
+    const url = buildWorkspaceUrl(window.location.href, {
+      filters, shortlistedIds, compareIds, compareOpen, shortlistOnly, view, selectedId,
+    });
+    window.history.replaceState({}, '', url);
+    await copyText(url.toString());
+    setToast(`Search link copied with ${shortlistedIds.length} shortlisted parcel${shortlistedIds.length === 1 ? '' : 's'}`);
+  };
   const shareParcel = async () => {
     if (!selected) return;
-    const url = new URL(window.location.href);
-    url.searchParams.set('parcel', selected.id);
-    try { await navigator.clipboard.writeText(url.toString()); }
-    catch {
-      const input = document.createElement('textarea'); input.value = url.toString(); document.body.appendChild(input); input.select(); document.execCommand('copy'); input.remove();
-    }
-    setShared(true); setToast('Parcel link copied'); window.setTimeout(() => setShared(false), 2200);
+    const url = buildWorkspaceUrl(window.location.href, {
+      filters, shortlistedIds, compareIds, compareOpen, shortlistOnly, view, selectedId: selected.id,
+    });
+    await copyText(url.toString());
+    setShared(true); setToast('Parcel and search link copied'); window.setTimeout(() => setShared(false), 2200);
   };
   const exportCsv = () => {
     const headers = ['Address', 'APN', 'City', 'State', 'ZIP', 'Acres', 'Square feet', 'Zoning', 'Topography', 'Frontage feet', 'Assessor land value', 'Last sale price', 'Last sale date', 'Seller signal', 'Motivation flags', 'Latitude', 'Longitude'];
@@ -114,6 +191,8 @@ export default function App() {
         </div>
         <div className="dataset-pill"><span className="live-dot" /> Interactive preview <span>·</span> Cleveland, OH</div>
         <div className="header-actions">
+          <button className="secondary-button shortlist-header-button" onClick={() => setShortlistOpen(true)} aria-label={`Open shortlist, ${shortlistedIds.length} parcels`}><Bookmark size={16} /><span className="header-button-label">Shortlist</span><span className="shortlist-count">{shortlistedIds.length}</span></button>
+          <button className="secondary-button share-search-button" onClick={shareSearch}><Share2 size={16} /><span className="header-button-label">Share search</span></button>
           <button className="secondary-button export-button" onClick={exportCsv} disabled={!filtered.length}><Download size={16} /> Export CSV</button>
           <button className="mobile-filter-button" onClick={() => setFiltersOpen(true)}><Filter size={17} /> Filters</button>
         </div>
@@ -122,7 +201,7 @@ export default function App() {
       <div className="workspace-toolbar">
         <div>
           <h1>Find the land. See the math.</h1>
-          <p>{filtered.length} of {dataset.recordCount} real cached parcels{latestCache ? ` · cached through ${latestCache}` : ''}</p>
+          <p>{filtered.length} of {dataset.recordCount} real cached parcels{shortlistOnly ? ' in your shortlist' : ''}{latestCache ? ` · cached through ${latestCache}` : ''}</p>
         </div>
         <div className="toolbar-actions">
           <div className="saved-search-wrap">
@@ -140,6 +219,13 @@ export default function App() {
       </div>
 
       <div className="data-notice"><Info size={14} /><span>Real public-record sample, not a live nationwide feed. No owner contact details, skip tracing, contracts, or outbound actions.</span></div>
+      <div className="shortlist-scope-bar">
+        <div className="scope-toggle" aria-label="Parcel browsing scope">
+          <button className={!shortlistOnly ? 'active' : ''} aria-pressed={!shortlistOnly} onClick={() => setShortlistOnly(false)}>All parcels</button>
+          <button className={shortlistOnly ? 'active' : ''} aria-pressed={shortlistOnly} onClick={() => setShortlistOnly(true)}><Bookmark size={14} /> Shortlist only <span>{shortlistedIds.length}</span></button>
+        </div>
+        <span>{shortlistOnly ? 'Browsing only shortlisted parcels · all filters still apply' : 'Select a parcel below, then add it to your shortlist'}</span>
+      </div>
 
       <main className={`workspace ${view === 'list' ? 'list-view' : 'map-view'}${selected && detailOpen ? ' has-detail' : ''}`}>
         <div className={`filters-container${filtersOpen ? ' mobile-open' : ''}`}>
@@ -148,12 +234,30 @@ export default function App() {
         </div>
         {filtersOpen && <button className="drawer-backdrop" onClick={() => setFiltersOpen(false)} aria-label="Close filters overlay" />}
         <section className="results-workspace">
-          {view === 'map' ? <LandMap records={filtered} selectedId={selectedId} onSelect={selectParcel} /> : <ParcelList records={filtered} selectedId={selectedId} onSelect={selectParcel} onReset={resetFilters} />}
+          {selected && <div className="selected-action-bar">
+            <div><span>Selected parcel</span><strong>{selected.address.street ?? selected.apn ?? 'Land parcel'}</strong><small>{acresLabel(selected.lot.acres)} · {selected.lot.zoning ?? 'Zoning unknown'}</small></div>
+            <div className="selected-parcel-actions">
+              <button className={`secondary-button${shortlistedIds.includes(selected.id) ? ' is-shortlisted' : ''}`} aria-pressed={shortlistedIds.includes(selected.id)} onClick={() => toggleParcel(selected)}>{shortlistedIds.includes(selected.id) ? <BookmarkCheck size={16} /> : <BookmarkPlus size={16} />}<span>{shortlistedIds.includes(selected.id) ? 'Shortlisted' : 'Add to shortlist'}</span></button>
+              <button className="secondary-button" onClick={() => setOfferRecord(selected)}><FileDown size={16} /><span>Comp / offer PDF</span></button>
+            </div>
+          </div>}
+          <div className="parcel-stage">
+            {shortlistOnly && !filtered.length ? <div className="empty-state shortlist-browse-empty">
+              <Bookmark size={30} />
+              <h3>{shortlistedIds.length ? 'No shortlisted parcels match these filters' : 'Your shortlist is empty'}</h3>
+              <p>{shortlistedIds.length ? 'Clear or widen the filters to see your saved parcels again.' : 'Browse all parcels, select one on the map or in the list, and add it to your shortlist.'}</p>
+              <button className="secondary-button" onClick={shortlistedIds.length ? resetFilters : () => setShortlistOnly(false)}>{shortlistedIds.length ? 'Reset filters' : 'Browse all parcels'}</button>
+            </div> : view === 'map' ? <LandMap records={filtered} selectedId={selectedId} onSelect={selectParcel} /> : <ParcelList records={filtered} selectedId={selectedId} onSelect={selectParcel} onReset={resetFilters} />}
+          </div>
         </section>
         {selected && detailOpen && <ParcelDetail record={selected} onClose={() => setDetailOpen(false)} onShare={shareParcel} shared={shared} />}
       </main>
 
       <footer className="app-footer"><span>Tranchi Land · product concept preview</span><span>Public records can be wrong or stale. Verify before making an offer.</span></footer>
+      {shortlistOpen && <ShortlistPanel records={shortlistedRecords} compareIds={compareIds} onClose={() => setShortlistOpen(false)} onSelect={id => { selectParcel(id); setShortlistOpen(false); }} onRemove={removeParcel} onClear={clearShortlist} onToggleCompare={toggleCompare} onCompare={openComparison} />}
+      {compareOpen && compareRecords.length >= 2 && <CompareParcels records={compareRecords} onClose={() => setCompareOpen(false)} onRemove={id => setCompareIds(ids => ids.filter(compareId => compareId !== id))} onOfferPdf={setOfferRecord} />}
+      {offerRecord && <CompOfferDialog record={offerRecord} onClose={() => setOfferRecord(null)} onDownloaded={filename => setToast(`PDF downloaded · ${filename}`)} />}
+      {initialUrl.recovered && !urlWarningDismissed && <div className="toast url-warning" role="alert"><span>Some shared-link values were invalid and were safely reset.</span><button onClick={() => setUrlWarningDismissed(true)}>Dismiss</button></div>}
       {toast && <div className="toast" role="status"><Check size={16} />{toast}</div>}
     </div>
   );
