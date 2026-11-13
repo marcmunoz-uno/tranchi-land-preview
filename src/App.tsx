@@ -21,6 +21,11 @@ import {
 
 const STORAGE_KEY = 'tranchi.land.savedSearches.v1';
 const VALID_PARCEL_IDS = new Set(dataset.records.map(record => record.id));
+const VALID_FILTER_VALUES = {
+  zoning: new Set(dataset.records.map(record => record.lot.zoning).filter((value): value is string => Boolean(value))),
+  topography: new Set(dataset.records.map(record => record.lot.topography).filter((value): value is string => Boolean(value))),
+  markets: new Set(dataset.markets.map(market => market.id)),
+};
 type SavedSearch = { name: string; filters: FilterState };
 type ViewMode = 'map' | 'list';
 
@@ -51,7 +56,7 @@ async function copyText(value: string) {
 }
 
 export default function App() {
-  const [initialUrl] = useState(() => parseWorkspaceUrl(window.location.search, VALID_PARCEL_IDS));
+  const [initialUrl] = useState(() => parseWorkspaceUrl(window.location.search, VALID_PARCEL_IDS, VALID_FILTER_VALUES));
   const [view, setView] = useState<ViewMode>(initialUrl.view);
   const [filters, setFilters] = useState<FilterState>(initialUrl.filters);
   const [selectedId, setSelectedId] = useState<string | null>(initialUrl.selectedId ?? dataset.records[0]?.id ?? null);
@@ -192,7 +197,7 @@ export default function App() {
         <div className="dataset-pill"><span className="live-dot" /> Interactive preview <span>·</span> {dataset.markets.length} markets</div>
         <div className="header-actions">
           <button className="secondary-button shortlist-header-button" onClick={() => setShortlistOpen(true)} aria-label={`Open shortlist, ${shortlistedIds.length} parcels`}><Bookmark size={16} /><span className="header-button-label">Shortlist</span><span className="shortlist-count">{shortlistedIds.length}</span></button>
-          <button className="secondary-button share-search-button" onClick={shareSearch}><Share2 size={16} /><span className="header-button-label">Share search</span></button>
+          <button className="secondary-button share-search-button" onClick={shareSearch} aria-label="Share search"><Share2 size={16} /><span className="header-button-label">Share search</span></button>
           <button className="secondary-button export-button" onClick={exportCsv} disabled={!filtered.length}><Download size={16} /> Export CSV</button>
           <button className="mobile-filter-button" onClick={() => setFiltersOpen(true)}><Filter size={17} /> Filters</button>
         </div>

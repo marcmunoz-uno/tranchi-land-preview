@@ -83,6 +83,11 @@ try {
   assert.ok(insufficientPdf.length > 8000);
   console.log(`PASS real PDF downloads (${estimatedPdf.length} bytes with estimate; ${insufficientPdf.length} bytes honest insufficient state)`);
   await page.getByRole('button', { name: 'Close comp and offer worksheet', exact: true }).click();
+  await page.getByRole('button', { name: /Comp \/ offer PDF/ }).first().click();
+  await page.locator('.offer-dialog').waitFor();
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('.offer-dialog').count(), 0);
+  console.log('PASS Escape closes the comp and offer dialog');
 
   await page.goto(`${base}?min=-2&motivation=invalid&saved=unknown&compare=unknown`, { waitUntil: 'networkidle' });
   await page.locator('.land-marker').first().waitFor();
@@ -94,6 +99,8 @@ try {
   const mobilePage = await mobile.newPage();
   mobilePage.on('pageerror', error => errors.push(error.message));
   await mobilePage.goto(compareUrl, { waitUntil: 'networkidle' });
+  assert.ok(await mobilePage.getByRole('button', { name: 'Share search', exact: true }).count() > 0);
+  console.log('PASS mobile share control has an accessible name');
   await mobilePage.locator('.compare-overlay').waitFor();
   assert.equal(await mobilePage.evaluate(() => document.body.scrollWidth <= innerWidth), true);
   await mobilePage.getByRole('button', { name: 'Close comparison' }).click();

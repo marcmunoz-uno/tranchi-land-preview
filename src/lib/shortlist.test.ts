@@ -96,6 +96,18 @@ describe('shareable workspace URLs', () => {
     expect(parsed.recovered).toBe(true);
   });
 
+  it('resets unsupported market, zoning, and topography values instead of silently returning no parcels', () => {
+    const parsed = parseWorkspaceUrl(
+      '?zoning=not-a-zone&topo=not-terrain&market=not-a-market',
+      validIds,
+      { zoning: new Set(['R1']), topography: new Set(['Level']), markets: new Set(['Cleveland, OH']) },
+    );
+    expect(parsed.filters.zoning).toBe(DEFAULT_FILTERS.zoning);
+    expect(parsed.filters.topography).toBe(DEFAULT_FILTERS.topography);
+    expect(parsed.filters.market).toBe(DEFAULT_FILTERS.market);
+    expect(parsed.recovered).toBe(true);
+  });
+
   it('keeps compare limited to five shortlisted parcels', () => {
     const saved = [...validIds];
     const parsed = parseWorkspaceUrl(`?saved=${saved.join(',')}&compare=${saved.join(',')}`, validIds);

@@ -23,6 +23,12 @@ export type ParsedWorkspaceUrl = WorkspaceUrlState & {
   recovered: boolean;
 };
 
+export type WorkspaceCriteria = {
+  zoning: ReadonlySet<string>;
+  topography: ReadonlySet<string>;
+  markets: ReadonlySet<string>;
+};
+
 export function sanitizeShortlist(value: unknown, validIds: ReadonlySet<string>): string[] {
   if (!Array.isArray(value)) return [];
   const result: string[] = [];
@@ -79,7 +85,7 @@ function validAcreage(value: string | null) {
   return Number.isFinite(number) && number >= 0 ? value : null;
 }
 
-export function parseWorkspaceUrl(search: string, validIds: ReadonlySet<string>): ParsedWorkspaceUrl {
+export function parseWorkspaceUrl(search: string, validIds: ReadonlySet<string>, criteria?: WorkspaceCriteria): ParsedWorkspaceUrl {
   const params = new URLSearchParams(search);
   const filters: FilterState = { ...DEFAULT_FILTERS };
   let recovered = false;
@@ -87,7 +93,7 @@ export function parseWorkspaceUrl(search: string, validIds: ReadonlySet<string>)
   const query = params.get('q');
   const market = params.get('market');
   if (market !== null) {
-    if (market.length <= 100 && !/[\u0000-\u001f]/.test(market)) filters.market = market;
+    if (market.length <= 100 && !/[\u0000-\u001f]/.test(market) && (!criteria || market === 'all' || criteria.markets.has(market))) filters.market = market;
     else recovered = true;
   }
   const vacancy = params.get('vacancy');
@@ -104,10 +110,10 @@ export function parseWorkspaceUrl(search: string, validIds: ReadonlySet<string>)
     if (value === null) recovered = true;
     else filters[key] = value;
   }
-  for (const [param, key] of [['zoning', 'zoning'], ['topo', 'topography']] as const) {
+  for (const [param, key, allowed] of [['zoning', 'zoning', criteria?.zoning], ['topo', 'topography', criteria?.topography]] as const) {
     const value = params.get(param);
     if (value === null) continue;
-    if (value.length <= 80 && !/[\u0000-\u001f]/.test(value)) filters[key] = value;
+    if (value.length <= 80 && !/[\u0000-\u001f]/.test(value) && (value === 'all' || !allowed || allowed.has(value))) filters[key] = value;
     else recovered = true;
   }
   const motivation = params.get('motivation');

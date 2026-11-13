@@ -34,6 +34,12 @@ try {
   console.log('PASS review records are included only by choice (439 likely + 3 unclear)');
   assert.deepEqual(errors, []);
   console.log('PASS zero JavaScript errors');
+
+  await page.goto(`${base}?zoning=not-a-real-zone`, { waitUntil: 'networkidle' });
+  await page.locator('.url-warning').waitFor();
+  assert.match(await page.locator('.url-warning').innerText(), /invalid and were safely reset/);
+  assert.equal(await page.locator('.land-marker').count(), 439);
+  console.log('PASS unsupported zoning resets with a visible warning instead of an empty state');
 } finally {
   await context.close();
   await browser.close();
