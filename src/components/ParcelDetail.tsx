@@ -22,7 +22,9 @@ export function ParcelDetail({ record, onClose, onShare, shared }: {
   const signal = landSellerSignal(record);
   const comps = useMemo(() => findLandComps(record, dataset.records, settings, new Date(dataset.generatedAt)), [record, settings]);
   const analysis = useMemo(() => analyzeLand(record, comps), [record, comps]);
-  const maxOffer = analysis.estimatedValue === null ? null : analysis.estimatedValue - (Number(assignmentFee) || 0) - (Number(closingCosts) || 0);
+  const feeNumber = Math.max(0, Number(assignmentFee) || 0);
+  const costsNumber = Math.max(0, Number(closingCosts) || 0);
+  const maxOffer = analysis.estimatedValue === null ? null : analysis.estimatedValue - feeNumber - costsNumber;
   return (
     <aside className="detail-panel" aria-label={`Parcel details for ${addressLabel(record)}`}>
       <div className="detail-header">
@@ -109,7 +111,7 @@ export function ParcelDetail({ record, onClose, onShare, shared }: {
               <div className={`max-offer${(maxOffer ?? 0) < 0 ? ' negative' : ''}`}>
                 <span>Maximum seller offer</span>
                 <strong>{money(maxOffer)}</strong>
-                <p>{money(analysis.estimatedValue)} value − {money(Number(assignmentFee) || 0)} fee − {money(Number(closingCosts) || 0)} costs</p>
+                <p>{money(analysis.estimatedValue)} value − {money(feeNumber)} fee − {money(costsNumber)} costs</p>
               </div>
               <p className="section-note"><Info size={13} /> Planning math, not a buyer offer or appraisal. Verify access, title, utilities, zoning, and buyer demand before contracting.</p>
             </section>

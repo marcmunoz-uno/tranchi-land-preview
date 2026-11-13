@@ -40,6 +40,9 @@ async function desktop() {
   assert.match(offer, /Maximum seller offer/);
   assert.ok(await page.locator('.comp-row').count() >= 3);
   pass('parcel analysis', `${await page.locator('.comp-row').count()} real comps; ${offer.split('\n')[1]}`);
+  await page.getByLabel('Desired assignment fee').fill('-10000');
+  assert.match(await page.locator('.max-offer').innerText(), /− \$0 fee/);
+  pass('negative offer inputs', 'negative assignment fee is clamped to zero instead of inflating the offer');
   await page.screenshot({ path: path.join(outDir, 'screenshots', 'desktop-analysis.png') });
 
   await page.getByRole('button', { name: 'List', exact: true }).click();
