@@ -9,7 +9,8 @@ An original Tranchi-branded land-flipping product mockup built with real cached 
 - 556 real records across Cleveland OH, Bastrop TX, and Lehigh Acres FL.
 - A default view of 439 verified/probable vacant-land records; improved and unclear records remain available only by explicit choice.
 - Per-record vacancy status, confidence, reasons, and field completeness.
-- Street and satellite maps with synchronized parcel selection.
+- Street and satellite maps with synchronized parcel selection and normal mouse-wheel/touch zoom.
+- Address-specific Google Street View in the right-hand parcel and real-deal inspectors, with an external Google Maps fallback and coverage warning.
 - Market, address/APN/ZIP, acreage, zoning, topography, seller-signal, vacancy, and sale-history filters.
 - Market-level record counts, field coverage, and freshness.
 - Map-first and list-first layouts.

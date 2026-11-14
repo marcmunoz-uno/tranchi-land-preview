@@ -4,7 +4,7 @@
 
 - Local integrated preview: `http://127.0.0.1:3213/`
 - Live: `https://tranchi-land-preview.onrender.com/`
-- Latest verified application commit: `909f874` (`fix: remove unsupported deal provenance and party links`)
+- Latest verified application commit: `ba8e8f0` (`feat: enable scroll zoom and add Google Street View`)
 - Alphapipe PR: https://github.com/tranchi-labs/tranchi-alpha-pipeline/pull/1
 
 ## Automated checks
@@ -14,7 +14,7 @@
 - `uv run pytest -q` in alphapipe: 49/49 tests passed.
 - `python3 -m unittest discover scripts -p 'test_*.py'`: 6/6 malformed-data/export tests passed.
 - `python3 scripts/validate_land_preview.py`: 556 records, no errors, no forbidden contact fields.
-- `node scripts/e2e.mjs`: 10/10 checks passed locally and against the live URL.
+- `node scripts/e2e.mjs`: 12/12 checks passed locally and against the live URL, including scroll zoom and right-hand Google Street View.
 - `node scripts/e2e-workflows.mjs`: shortlist, comparison, sharing, PDF, corrupt-link recovery, Escape, accessible mobile sharing, and mobile overflow all passed locally and live.
 - `node scripts/e2e-markets.mjs`: market filtering, evidence filters, share URLs, and unsupported-zoning recovery all passed locally and live.
 - `node scripts/e2e-deals.mjs`: 18 source-backed production cards, supplied price provenance, PII-free source links, production IDs, filters, search/reset, real photos, mobile detail, and zero JavaScript errors passed locally and live.
