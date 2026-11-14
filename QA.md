@@ -17,7 +17,7 @@
 - `node scripts/e2e.mjs`: 10/10 checks passed locally and against the live URL.
 - `node scripts/e2e-workflows.mjs`: shortlist, comparison, sharing, PDF, corrupt-link recovery, Escape, accessible mobile sharing, and mobile overflow all passed locally and live.
 - `node scripts/e2e-markets.mjs`: market filtering, evidence filters, share URLs, and unsupported-zoning recovery all passed locally and live.
-- `node scripts/e2e-deals.mjs`: 26 production cards, all three markets, real photos, source links, production IDs, filters, search/reset, mobile detail, and zero JavaScript errors passed locally.
+- `node scripts/e2e-deals.mjs`: 26 production cards, all three markets, real photos, source links, production IDs, filters, search/reset, mobile detail, and zero JavaScript errors passed locally and live.
 
 ## Verified product behavior
 

@@ -54,7 +54,9 @@ try {
   assert.ok(loadedImages > 0);
   console.log(`PASS real property photos load (${loadedImages} visible at check time)`);
 
-  await page.goto(`${base}?workspace=deals`, { waitUntil: 'networkidle' });
+  const dealsUrl = new URL(base);
+  dealsUrl.searchParams.set('workspace', 'deals');
+  await page.goto(dealsUrl.toString(), { waitUntil: 'networkidle' });
   await page.locator('.deal-card').first().waitFor();
   assert.equal(await page.locator('.deal-card').count(), 26);
   console.log('PASS real-deals workspace is directly shareable');
@@ -62,7 +64,7 @@ try {
   const mobile = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const mobilePage = await mobile.newPage();
   mobilePage.on('pageerror', error => errors.push(error.message));
-  await mobilePage.goto(`${base}?workspace=deals`, { waitUntil: 'networkidle' });
+  await mobilePage.goto(dealsUrl.toString(), { waitUntil: 'networkidle' });
   await mobilePage.locator('.deal-card').first().waitFor();
   assert.equal(await mobilePage.evaluate(() => document.body.scrollWidth <= innerWidth), true);
   await mobilePage.locator('.deal-card-main').first().click();
