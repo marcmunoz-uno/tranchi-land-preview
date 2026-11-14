@@ -4,9 +4,8 @@ import { dateLabel, money, number } from '../lib/analysis';
 import { tranchiDeals, dealDataset } from '../data/deals';
 import type { DealCategoryGroup, TranchiDeal } from '../dealTypes';
 
-const CATEGORY_LABELS: Record<DealCategoryGroup | 'all', string> = {
+const CATEGORY_LABELS: Partial<Record<DealCategoryGroup, string>> & { all: string } = {
   all: 'All deal types',
-  on_market: 'On-market',
   land_bank: 'Land bank',
   tax_lien: 'Tax / distress',
   motivated_seller: 'Off-market leads',
@@ -98,7 +97,7 @@ export function DealFeed() {
         <div><span className="eyebrow">Production feed · not synthetic deals</span><h1>Real Tranchi deals.</h1><p>{records.length} of {dealDataset.recordCount} share-safe production records · {dealDataset.activeDealCount.toLocaleString()} active in the source system</p></div>
         <div className="deal-source-stamp"><BadgeDollarSign size={16} /><span>Actual Tranchi IDs, prices, photos, and source links</span></div>
       </div>
-      <div className="deal-provenance-notice">Price provenance stays attached: MLS list price, opening bid, or tax-assessed reference. Off-market assessed value is not an asking price. Listing status and source-model cash flow require verification.</div>
+      <div className="deal-provenance-notice">Price provenance stays attached: opening bid or tax-assessed reference. Off-market assessed value is not an asking price. Listing status and source-model cash flow require verification.</div>
       <div className="deal-filters">
         <label className="deal-search"><Search size={15} /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Address or Tranchi ID" aria-label="Search real deals" /></label>
         <select value={category} onChange={event => setCategory(event.target.value as DealCategoryGroup | 'all')} aria-label="Deal type">{Object.entries(CATEGORY_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>

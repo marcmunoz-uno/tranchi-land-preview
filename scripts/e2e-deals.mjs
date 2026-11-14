@@ -12,15 +12,15 @@ try {
   await page.goto(base, { waitUntil: 'networkidle' });
   await page.getByRole('button', { name: 'Real deals', exact: true }).click();
   await page.locator('.deal-card').first().waitFor();
-  assert.equal(await page.locator('.deal-card').count(), 26);
-  assert.match(await page.locator('.deal-feed-heading').innerText(), /26 of 26 share-safe production records/);
+  assert.equal(await page.locator('.deal-card').count(), 18);
+  assert.match(await page.locator('.deal-feed-heading').innerText(), /18 of 18 share-safe production records/);
   assert.match(await page.locator('.deal-feed-heading').innerText(), /active in the source system/);
-  console.log('PASS 26 real production deal cards with source-system count');
+  console.log('PASS 18 source-backed production deal cards with source-system count');
 
-  await page.getByLabel('Deal market').selectOption('Bastrop, TX');
-  assert.equal(await page.locator('.deal-card').count(), 2);
-  assert.match(await page.locator('.deal-card').first().innerText(), /Bastrop, TX/);
-  console.log('PASS Bastrop real-deal coverage');
+  const dealTypeOptions = await page.getByLabel('Deal type').locator('option').allTextContents();
+  assert.equal(dealTypeOptions.includes('On-market'), false);
+  assert.deepEqual(await page.getByLabel('Deal market').locator('option').allTextContents(), ['All preview markets', 'Cleveland, OH', 'Lehigh Acres, FL']);
+  console.log('PASS unsupported on-market rows and unprovenanced markets are excluded');
 
   await page.getByLabel('Deal market').selectOption('all');
   await page.getByLabel('Deal type').selectOption('land_bank');
@@ -37,16 +37,16 @@ try {
 
   await page.getByRole('button', { name: 'Close real deal details' }).click();
   await page.getByLabel('Deal type').selectOption('all');
-  await page.getByLabel('Search real deals').fill('152040');
+  await page.getByLabel('Search real deals').fill('4740085');
   assert.equal(await page.locator('.deal-card').count(), 1);
-  assert.match(await page.locator('.deal-card').first().innerText(), /2756 West Blvd/);
-  assert.match(await page.locator('.deal-card-footer a').getAttribute('href') || '', /highlight=152040/);
+  assert.match(await page.locator('.deal-card').first().innerText(), /1861 Roxford Rd/);
+  assert.match(await page.locator('.deal-card-footer a').getAttribute('href') || '', /highlight=4740085/);
   console.log('PASS search by real production ID and direct Tranchi link');
 
   await page.getByLabel('Search real deals').fill('not-a-real-deal-id');
   assert.match(await page.locator('.deal-empty').innerText(), /No real deals match/);
   await page.getByRole('button', { name: /Reset deal filters/ }).click();
-  assert.equal(await page.locator('.deal-card').count(), 26);
+  assert.equal(await page.locator('.deal-card').count(), 18);
   console.log('PASS empty state and reset');
 
   await page.waitForFunction(() => Array.from(document.querySelectorAll('.deal-card img')).some(image => image.complete && image.naturalWidth > 0), { timeout: 20000 });
@@ -58,7 +58,7 @@ try {
   dealsUrl.searchParams.set('workspace', 'deals');
   await page.goto(dealsUrl.toString(), { waitUntil: 'networkidle' });
   await page.locator('.deal-card').first().waitFor();
-  assert.equal(await page.locator('.deal-card').count(), 26);
+  assert.equal(await page.locator('.deal-card').count(), 18);
   console.log('PASS real-deals workspace is directly shareable');
 
   const mobile = await browser.newContext({ viewport: { width: 390, height: 844 } });

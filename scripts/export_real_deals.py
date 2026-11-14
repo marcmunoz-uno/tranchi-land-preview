@@ -2,8 +2,8 @@
 """Export a share-safe sample of real Tranchi production deals.
 
 Read-only against production TiDB through the existing freshness_worker.db()
-credential path. Owner identity/contact blocks, internal notes, and distress
-metadata are never selected or exported.
+credential path. Owner identity/contact blocks and internal/free-form notes
+are never selected. Only the allowlisted deal/price fields below are exported.
 """
 import argparse
 import collections
@@ -25,13 +25,11 @@ FIELDS = (
     'delinquentFlag,sourceUrl,absenteeOwner,createdAt'
 )
 QUERIES = {
-    'on_market': f"SELECT {FIELDS} FROM on_market_properties WHERE isActive=1 AND dealCategory='on_market' AND {TARGET} AND cashFlow>0 AND imageUrls IS NOT NULL ORDER BY cashFlow DESC LIMIT 6",
     'land_bank': f"SELECT {FIELDS} FROM on_market_properties WHERE isActive=1 AND dealCategory='land_bank' AND {TARGET} AND sourceUrl IS NOT NULL ORDER BY createdAt DESC LIMIT 6",
     'tax_lien': f"SELECT {FIELDS} FROM on_market_properties WHERE isActive=1 AND dealCategory IN ('foreclosure_auction','tax_lien','probate') AND {TARGET} AND (openingBid IS NOT NULL OR taxBalance IS NOT NULL OR marketValue IS NOT NULL) AND sourceUrl IS NOT NULL ORDER BY createdAt DESC LIMIT 8",
     'motivated_seller': f"SELECT {FIELDS} FROM on_market_properties WHERE isActive=1 AND dealCategory='motivated_seller' AND {TARGET} AND marketValue IS NOT NULL ORDER BY score DESC,createdAt DESC LIMIT 4",
 }
 PRICE_LABELS = {
-    'on_market': 'List price',
     'opening_bid': 'Opening bid',
     'tax_assessed': 'Tax-assessed reference',
 }
@@ -64,7 +62,7 @@ def date(value):
 def public_url(value):
     if not value or not str(value).startswith(('https://', 'http://')):
         return None
-    if 'myplace.cuyahogacounty.us' in value:
+    if 'myplace.cuyahogacounty.us' in value or 'dln.com' in value or 'county-treasurer-vs-' in value:
         return None
     return value
 
@@ -139,9 +137,6 @@ def main():
         for group, query in QUERIES.items():
             cur.execute(query)
             records.extend(normalize(row, group) for row in cur.fetchall())
-        for group, query in EXTRA_QUERIES:
-            cur.execute(query)
-            records.extend(normalize(row, group) for row in cur.fetchall())
         cur.execute('SELECT COUNT(*) FROM on_market_properties WHERE isActive=1')
         active_count = next(iter(cur.fetchone().values()))
     finally:
@@ -154,7 +149,7 @@ def main():
         'recordCount': len(records),
         'activeDealCount': active_count,
         'categoryCounts': dict(collections.Counter(record['categoryGroup'] for record in records)),
-        'privacy': 'No owner names, mailing addresses, phone numbers, emails, internal notes, or distress metadata.',
+        'privacy': 'No owner identity/contact fields, internal notes, or free-form distress metadata; only documented deal/price fields are exported.',
         'records': records,
     }
     path = Path(args.out)
