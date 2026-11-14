@@ -4,12 +4,12 @@
 
 - Local integrated preview: `http://127.0.0.1:3213/`
 - Live: `https://tranchi-land-preview.onrender.com/`
-- Latest verified application commit: `2d19454` (`fix: keep Escape handling on the topmost dialog`)
+- Latest verified application commit: `9a44de0` (`feat: add real Tranchi production deals workspace`)
 - Alphapipe PR: https://github.com/tranchi-labs/tranchi-alpha-pipeline/pull/1
 
 ## Automated checks
 
-- `npm test`: 64/64 unit, data, validation, market, and URL tests passed.
+- `npm test`: 68/68 unit, data, validation, market, URL, and real-deal tests passed.
 - `npm run build`: TypeScript and Vite production build passed.
 - `uv run pytest -q` in alphapipe: 49/49 tests passed.
 - `python3 -m unittest discover scripts -p 'test_*.py'`: 6/6 malformed-data/export tests passed.
@@ -17,6 +17,7 @@
 - `node scripts/e2e.mjs`: 10/10 checks passed locally and against the live URL.
 - `node scripts/e2e-workflows.mjs`: shortlist, comparison, sharing, PDF, corrupt-link recovery, Escape, accessible mobile sharing, and mobile overflow all passed locally and live.
 - `node scripts/e2e-markets.mjs`: market filtering, evidence filters, share URLs, and unsupported-zoning recovery all passed locally and live.
+- `node scripts/e2e-deals.mjs`: 26 production cards, all three markets, real photos, source links, production IDs, filters, search/reset, mobile detail, and zero JavaScript errors passed locally.
 
 ## Verified product behavior
 

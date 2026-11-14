@@ -24,6 +24,24 @@ An original Tranchi-branded land-flipping product mockup built with real cached 
 - Accessible mobile drawers, inspector, dialogs, and controls, including Escape-to-close and named share actions.
 - `noindex,nofollow` and static security headers.
 
+## Real production deals
+
+The **Real deals** workspace adds 26 read-only production records from `on_market_properties`:
+
+- 8 on-market listings across all three preview markets, including positive and negative source-model cash-flow scenarios.
+- 6 Cuyahoga Land Bank records with public source links.
+- 8 recent tax-lien/distress records with opening-bid provenance.
+- 4 off-market motivated-seller leads with tax-assessed reference values, not asking prices.
+
+Cards and the detail drawer include actual Tranchi IDs, property photos, production status, price provenance, source-model rent/DSCR/cash flow where available, ingest dates, public source links, and direct `tranchi.ai/properties/on-market?highlight=<id>` links. No owner contacts, internal notes, or distress metadata are exported.
+
+Refresh the share-safe export read-only:
+
+```bash
+python3 scripts/export_real_deals.py --out data/tranchi-deals.json
+node scripts/e2e-deals.mjs
+```
+
 ## Honest limits
 
 This is a static interactive preview, not a live subscription product. It has no backend, authentication, live feed, owner contacts, skip tracing, direct mail, e-sign, CRM writes, or outbound actions. Flood, wetlands, canal access, and parcel-boundary polygons are not in the cached dataset. Points are provider coordinates/parcel centroids, not boundaries. Public records can be wrong or stale; verify before making an offer.
