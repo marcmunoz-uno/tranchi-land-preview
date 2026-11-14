@@ -1,0 +1,60 @@
+export type DealCategoryGroup = 'on_market' | 'land_bank' | 'tax_lien' | 'motivated_seller';
+
+export type TranchiDeal = {
+  id: number;
+  tranchiUrl: string;
+  sourceUrl: string | null;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string | null;
+    lat: number | null;
+    lng: number | null;
+  };
+  category: string;
+  categoryGroup: DealCategoryGroup;
+  categoryLabel: string;
+  leadStatus: string | null;
+  qcStatus: string | null;
+  price: number | null;
+  priceSource: string | null;
+  priceLabel: string;
+  priceConfidence: number | null;
+  monthlyRent: number | null;
+  dscrRatio: number | null;
+  cashFlow: number | null;
+  daysOnMarket: number | null;
+  propertyType: string | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  squareFeet: number | null;
+  market: string | null;
+  score: number | null;
+  marketValue: number | null;
+  lastSalePrice: number | null;
+  lastSaleDate: string | null;
+  saleDate: string | null;
+  openingBid: number | null;
+  auctionStatus: string | null;
+  appraisedValue: number | null;
+  filingDate: string | null;
+  taxBalance: number | null;
+  delinquent: boolean;
+  absenteeOwner: boolean;
+  images: string[];
+  listingDate: string | null;
+  sourceCreatedAt: string | null;
+  createdAt: string;
+};
+
+export type DealDataset = {
+  dataset: string;
+  source: string;
+  generatedAt: string;
+  recordCount: number;
+  activeDealCount: number;
+  categoryCounts: Record<string, number>;
+  privacy: string;
+  records: TranchiDeal[];
+};

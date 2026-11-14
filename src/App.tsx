@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Bookmark, BookmarkCheck, BookmarkPlus, Check, ChevronDown, Download, FileDown, Filter, Info, List, Map, Mountain, Share2, X } from 'lucide-react';
+import { Bookmark, BookmarkCheck, BookmarkPlus, BadgeDollarSign, Check, ChevronDown, Download, FileDown, Filter, Info, List, Map, Mountain, Share2, X } from 'lucide-react';
 import { dataset } from './data/land';
+import { dealDataset } from './data/deals';
 import { acresLabel, addressLabel, DEFAULT_FILTERS, filterLandRecords, landSellerSignal } from './lib/analysis';
 import type { FilterState, LandRecord } from './types';
 import { LandMap } from './components/LandMap';
@@ -10,6 +11,7 @@ import { ParcelDetail } from './components/ParcelDetail';
 import { ShortlistPanel } from './components/ShortlistPanel';
 import { CompareParcels } from './components/CompareParcels';
 import { CompOfferDialog } from './components/CompOfferDialog';
+import { DealFeed } from './components/DealFeed';
 import {
   buildWorkspaceUrl,
   loadShortlist,
@@ -28,6 +30,7 @@ const VALID_FILTER_VALUES = {
 };
 type SavedSearch = { name: string; filters: FilterState };
 type ViewMode = 'map' | 'list';
+type WorkspaceTab = 'land' | 'deals';
 
 function loadSavedSearches(): SavedSearch[] {
   try {
@@ -57,6 +60,7 @@ async function copyText(value: string) {
 
 export default function App() {
   const [initialUrl] = useState(() => parseWorkspaceUrl(window.location.search, VALID_PARCEL_IDS, VALID_FILTER_VALUES));
+  const [workspaceTab, setWorkspaceTab] = useState<WorkspaceTab>(() => new URLSearchParams(window.location.search).get('workspace') === 'deals' ? 'deals' : 'land');
   const [view, setView] = useState<ViewMode>(initialUrl.view);
   const [filters, setFilters] = useState<FilterState>(initialUrl.filters);
   const [selectedId, setSelectedId] = useState<string | null>(initialUrl.selectedId ?? dataset.records[0]?.id ?? null);
@@ -103,8 +107,10 @@ export default function App() {
     const url = buildWorkspaceUrl(window.location.href, {
       filters, shortlistedIds, compareIds, compareOpen, shortlistOnly, view, selectedId,
     });
+    if (workspaceTab === 'deals') url.searchParams.set('workspace', 'deals');
+    else url.searchParams.delete('workspace');
     window.history.replaceState({}, '', url);
-  }, [filters, shortlistedIds, compareIds, compareOpen, shortlistOnly, view, selectedId]);
+  }, [filters, shortlistedIds, compareIds, compareOpen, shortlistOnly, view, selectedId, workspaceTab]);
 
   useEffect(() => {
     if (compareOpen && compareRecords.length < 2) setCompareOpen(false);
@@ -122,6 +128,14 @@ export default function App() {
   }, []);
 
   const changeView = (next: ViewMode) => setView(next);
+  const changeWorkspace = (next: WorkspaceTab) => {
+    setWorkspaceTab(next);
+    setFiltersOpen(false);
+    setDetailOpen(false);
+    setShortlistOpen(false);
+    setCompareOpen(false);
+    setOfferRecord(null);
+  };
   const resetFilters = () => setFilters(DEFAULT_FILTERS);
   const saveSearch = () => {
     const name = searchName.trim().slice(0, 60);
@@ -194,15 +208,17 @@ export default function App() {
           <div className="brand-mark"><Mountain size={20} /></div>
           <div><span className="brand-name">TRANCHI <span>LAND</span></span><span className="brand-subtitle">Land flipping workspace</span></div>
         </div>
-        <div className="dataset-pill"><span className="live-dot" /> Interactive preview <span>·</span> {dataset.markets.length} markets</div>
-        <div className="header-actions">
+        <div className="dataset-pill"><span className="live-dot" /> {workspaceTab === 'deals' ? `${dealDataset.recordCount} real production deals` : <>Interactive preview <span>·</span> {dataset.markets.length} markets</>}</div>
+        <div className="workspace-switch" aria-label="Workspace"><button className={workspaceTab === 'land' ? 'active' : ''} aria-pressed={workspaceTab === 'land'} onClick={() => changeWorkspace('land')}><Mountain size={14} /> Land parcels</button><button className={workspaceTab === 'deals' ? 'active' : ''} aria-pressed={workspaceTab === 'deals'} onClick={() => changeWorkspace('deals')}><BadgeDollarSign size={14} /> Real deals</button></div>
+        {workspaceTab === 'land' && <div className="header-actions">
           <button className="secondary-button shortlist-header-button" onClick={() => setShortlistOpen(true)} aria-label={`Open shortlist, ${shortlistedIds.length} parcels`}><Bookmark size={16} /><span className="header-button-label">Shortlist</span><span className="shortlist-count">{shortlistedIds.length}</span></button>
           <button className="secondary-button share-search-button" onClick={shareSearch} aria-label="Share search"><Share2 size={16} /><span className="header-button-label">Share search</span></button>
           <button className="secondary-button export-button" onClick={exportCsv} disabled={!filtered.length}><Download size={16} /> Export CSV</button>
           <button className="mobile-filter-button" onClick={() => setFiltersOpen(true)}><Filter size={17} /> Filters</button>
-        </div>
+        </div>}
       </header>
 
+      {workspaceTab === 'deals' ? <DealFeed /> : <>
       <div className="workspace-toolbar">
         <div>
           <h1>Find the land. See the math.</h1>
@@ -257,6 +273,7 @@ export default function App() {
         </section>
         {selected && detailOpen && <ParcelDetail record={selected} onClose={() => setDetailOpen(false)} onShare={shareParcel} shared={shared} />}
       </main>
+      </>}
 
       <footer className="app-footer"><span>Tranchi Land · product concept preview</span><span>Public records can be wrong or stale. Verify before making an offer.</span></footer>
       {shortlistOpen && <ShortlistPanel records={shortlistedRecords} compareIds={compareIds} onClose={() => setShortlistOpen(false)} onSelect={id => { selectParcel(id); setShortlistOpen(false); }} onRemove={removeParcel} onClear={clearShortlist} onToggleCompare={toggleCompare} onCompare={openComparison} />}
