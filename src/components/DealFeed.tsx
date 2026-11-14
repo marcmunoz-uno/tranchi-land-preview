@@ -3,6 +3,7 @@ import { BadgeDollarSign, ExternalLink, Gavel, Home, ImageOff, Landmark, MapPin,
 import { dateLabel, money, number } from '../lib/analysis';
 import { tranchiDeals, dealDataset } from '../data/deals';
 import type { DealCategoryGroup, TranchiDeal } from '../dealTypes';
+import { StreetViewPanel } from './StreetViewPanel';
 
 const CATEGORY_LABELS: Partial<Record<DealCategoryGroup, string>> & { all: string } = {
   all: 'All deal types',
@@ -56,6 +57,7 @@ function DealDetail({ deal, onClose }: { deal: TranchiDeal; onClose: () => void 
       <button className="icon-button" onClick={onClose} aria-label="Close real deal details"><X size={19} /></button>
     </div>
     <DealImage deal={deal} large />
+    <StreetViewPanel street={deal.address.street} city={deal.address.city} state={deal.address.state} zip={deal.address.zip} lat={deal.address.lat} lng={deal.address.lng} />
     <div className="deal-detail-price"><span>{deal.priceLabel}</span><strong>{money(deal.price)}</strong><small>{deal.priceSource ? `Source: ${deal.priceSource}${deal.priceConfidence != null ? ` · ${Math.round(deal.priceConfidence * 100)}% confidence` : ''}` : 'Price provenance not supplied'}</small></div>
     <p className="deal-primary-metric">{primaryMetric(deal)}</p>
     <div className="deal-fact-grid">{facts.map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}</div>

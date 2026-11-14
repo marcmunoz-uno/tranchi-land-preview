@@ -31,6 +31,9 @@ try {
   assert.match(await page.locator('.deal-detail').innerText(), /TAX-ASSESSED REFERENCE/i);
   assert.match(await page.locator('.deal-detail').innerText(), /Tranchi #/i);
   assert.match(await page.locator('.deal-detail').innerText(), /View public source/);
+  assert.match(await page.locator('.deal-detail iframe').getAttribute('src'), /output=svembed/);
+  assert.match(await page.locator('.deal-detail iframe').getAttribute('title'), /Google Street View of 1861 Roxford Rd/);
+  console.log('PASS land-bank detail includes Google Street View');
   const sourceHref = await page.locator('.deal-detail-links a').last().getAttribute('href');
   assert.match(sourceHref || '', /cuyahogalandbank\.org/);
   console.log('PASS land-bank detail, provenance, production ID, and public source');

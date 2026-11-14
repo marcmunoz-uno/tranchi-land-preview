@@ -4,6 +4,7 @@ import type { CompSettings, LandRecord } from '../types';
 import { acresLabel, addressLabel, analyzeLand, dateLabel, DEFAULT_COMP_SETTINGS, findLandComps, landSellerSignal, money, nonNegativeAmount, number } from '../lib/analysis';
 import { dataset } from '../data/land';
 import { ValidationBadge } from './ValidationBadge';
+import { StreetViewPanel } from './StreetViewPanel';
 
 function Fact({ label, value, title }: { label: string; value: string; title?: string }) {
   return <div className="fact" title={title}><span>{label}</span><strong>{value}</strong></div>;
@@ -67,6 +68,7 @@ export function ParcelDetail({ record, onClose, onShare, shared }: {
               <Fact label="Point type" value={record.address.geoStatus ?? 'Unknown'} title="Provider location point. No parcel boundary is shown." />
             </div>
           </section>
+          <StreetViewPanel street={record.address.street ?? record.apn ?? 'Land parcel'} city={record.address.city ?? ''} state={record.address.state ?? ''} zip={record.address.zip} lat={record.address.lat} lng={record.address.lng} />
           <section className="detail-section">
             <h3>Why it might be worth a conversation</h3>
             <div className="reason-list">{signal.reasons.map(reason => <span key={reason}>{reason}</span>)}</div>

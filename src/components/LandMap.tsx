@@ -36,7 +36,14 @@ export function LandMap({ records, selectedId, onSelect }: { records: LandRecord
         style: STREET_STYLE,
         center: [-81.62, 41.48],
         zoom: 10,
-        cooperativeGestures: true,
+        cooperativeGestures: false,
+        scrollZoom: true,
+        touchZoomRotate: true,
+        dragPan: true,
+        dragRotate: false,
+        doubleClickZoom: true,
+        minZoom: 2,
+        maxZoom: 19,
         attributionControl: false,
       });
       instance.addControl(new NavigationControl({ showCompass: false }), 'bottom-right');
@@ -46,6 +53,7 @@ export function LandMap({ records, selectedId, onSelect }: { records: LandRecord
         if (!ready && event.error) setFailed(true);
       });
       map.current = instance;
+      container.current.dataset.scrollZoom = String(instance.scrollZoom.isEnabled());
       const observer = new ResizeObserver(() => instance.resize());
       observer.observe(container.current);
       return () => { observer.disconnect(); instance.remove(); map.current = null; };

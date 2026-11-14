@@ -29,8 +29,18 @@ async function desktop() {
   pass('desktop real map data', '439 verified/probable parcel markers rendered');
   await page.screenshot({ path: path.join(outDir, 'screenshots', 'desktop-map.png') });
 
+  assert.equal(await page.locator('.map-canvas').getAttribute('data-scroll-zoom'), 'true');
+  await page.locator('.map-canvas').hover();
+  await page.mouse.wheel(0, -400);
+  pass('scroll zoom', 'normal mouse-wheel zoom is enabled on the map');
+
   await page.locator('.land-marker').first().click();
   await page.locator('.detail-panel').waitFor();
+  const streetView = page.locator('.street-view-panel iframe');
+  assert.match(await streetView.getAttribute('title'), /Google Street View of/);
+  assert.match(await streetView.getAttribute('src'), /output=svembed/);
+  assert.match(await streetView.getAttribute('src'), /cbll=/);
+  pass('street view panel', 'right-hand parcel inspector includes address-specific Google Street View');
   assert.match(await page.locator('.detail-metrics').innerText(), /Lot size/);
   await page.getByRole('tab', { name: /Comps & offer/ }).click();
   await page.locator('.valuation-block').waitFor();
