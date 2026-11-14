@@ -4,7 +4,7 @@
 
 - Local integrated preview: `http://127.0.0.1:3213/`
 - Live: `https://tranchi-land-preview.onrender.com/`
-- Latest verified application commit: `9a44de0` (`feat: add real Tranchi production deals workspace`)
+- Latest verified application commit: `909f874` (`fix: remove unsupported deal provenance and party links`)
 - Alphapipe PR: https://github.com/tranchi-labs/tranchi-alpha-pipeline/pull/1
 
 ## Automated checks
@@ -17,7 +17,7 @@
 - `node scripts/e2e.mjs`: 10/10 checks passed locally and against the live URL.
 - `node scripts/e2e-workflows.mjs`: shortlist, comparison, sharing, PDF, corrupt-link recovery, Escape, accessible mobile sharing, and mobile overflow all passed locally and live.
 - `node scripts/e2e-markets.mjs`: market filtering, evidence filters, share URLs, and unsupported-zoning recovery all passed locally and live.
-- `node scripts/e2e-deals.mjs`: 26 production cards, all three markets, real photos, source links, production IDs, filters, search/reset, mobile detail, and zero JavaScript errors passed locally and live.
+- `node scripts/e2e-deals.mjs`: 18 source-backed production cards, supplied price provenance, PII-free source links, production IDs, filters, search/reset, real photos, mobile detail, and zero JavaScript errors passed locally and live.
 
 ## Verified product behavior
 
@@ -42,7 +42,7 @@
 
 - 556 real records extracted from the authoritative DGX Spark alphapipe cache; no paid provider retrieval.
 - Validation statuses: 51 verified vacant, 388 probable vacant, 114 improved, 3 unclear.
-- No owner names, mailing addresses, phone numbers, or email addresses.
+- No owner identity/contact fields, internal notes, or free-form distress metadata; only documented deal/price fields are exported.
 - No backend, authentication, live lookup, CRM write, skip trace, direct mail, e-sign, or outbound action.
 - No LandAtlas branding, code, or assets.
 - Raw SQLite files and Python artifacts are gitignored.

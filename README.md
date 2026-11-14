@@ -26,14 +26,15 @@ An original Tranchi-branded land-flipping product mockup built with real cached 
 
 ## Real production deals
 
-The **Real deals** workspace adds 26 read-only production records from `on_market_properties`:
+The **Real deals** workspace adds 18 read-only production records from `on_market_properties`:
 
-- 8 on-market listings across all three preview markets, including positive and negative source-model cash-flow scenarios.
-- 6 Cuyahoga Land Bank records with public source links.
-- 8 recent tax-lien/distress records with opening-bid provenance.
+- 6 Cuyahoga Land Bank records with PII-free public source links.
+- 8 recent tax-lien/distress records with supplied opening-bid provenance.
 - 4 off-market motivated-seller leads with tax-assessed reference values, not asking prices.
 
-Cards and the detail drawer include actual Tranchi IDs, property photos, production status, price provenance, source-model rent/DSCR/cash flow where available, ingest dates, public source links, and direct `tranchi.ai/properties/on-market?highlight=<id>` links. No owner contacts, internal notes, or distress metadata are exported.
+Unsupported on-market rows are excluded until verifiable price provenance and public sources exist. Current source-backed records are in Cleveland and Lehigh Acres. DLN case links are omitted because their URLs can contain party names.
+
+Cards and the detail drawer include actual Tranchi IDs, property photos, production status, supplied price provenance, source-model rent/DSCR/cash flow where available, ingest dates, PII-free public source links, and direct `tranchi.ai/properties/on-market?highlight=<id>` links. No owner identity/contact fields, internal notes, or free-form distress metadata are exported.
 
 Refresh the share-safe export read-only:
 
